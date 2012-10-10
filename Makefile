@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall
+CFLAGS = -Wall -Wextra
 DEST_DIR := ./build/
 
 all:	setup parser lexer test
