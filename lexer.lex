@@ -3,7 +3,7 @@
 %{
 #include <ast.h>
 #include <parser.h>
-#define SAVE_TOKEN yylval->string = strdup(yytext);charNum += yyleng
+#define SAVE_TOKEN /*yylval->string = strdup(yytext);*/charNum += yyleng
 #define TOKEN(t) (yylval->token = t)
 #define RET_TOKEN(t) {int i = yylval->token = t;charNum += yyleng;return i;}
 uint32_t lineNum = 1, charNum = 1;
