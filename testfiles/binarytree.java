@@ -41,7 +41,7 @@ class BT {
 
 }
 
-cla ss Tree{
+class Tree{
     Tree left ;
     Tree right;
     int key ;
