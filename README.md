@@ -11,6 +11,6 @@ Targets MiniJava <http://www.cambridge.org/us/features/052182060X/> and the Clan
 * make (3.82-8.fc16.x86_64)
 
 ###Milestone One
-Takes in one MiniJava source file from stdin.  Parses file, no semantic checks are made, no symbol tables etc.
+Takes in one MiniJava source file from stdin.  Parses the file, no semantic checks are made, no symbol tables etc.
 
 Returns 0 on success. On the first parse error the parse stops, an error is printed to stdout and the program exits a non-zero value.
