@@ -13,9 +13,10 @@ struct varDeclaration * testDec;
 %locations
 %left PLUS MINUS
 %left MULTIPLY
-%left BOOL_AND LESS_THAN
+%left BOOL_AND
 %left L_BRACKET L_PAREN
 %right BANG PERIOD EQUALS
+%nonassoc LESS_THAN
 %union {
 	int token;
 	char *string;
