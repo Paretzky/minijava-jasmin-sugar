@@ -5,7 +5,7 @@ DEST_DIR := ./build/
 all:	setup parser lexer test
 	
 test: test.c
-	$(CC) $(CFLAGS) -o $(DEST_DIR)parser -I. -I$(DEST_DIR) test.c $(DEST_DIR)parser.c $(DEST_DIR)lexer.c
+	$(CC) $(CFLAGS) -g -o $(DEST_DIR)parser -I. -I$(DEST_DIR) test.c $(DEST_DIR)parser.c $(DEST_DIR)lexer.c
 
 setup:	.IGNORE
 
