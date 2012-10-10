@@ -9,8 +9,8 @@ class Test {
 //		test 5
 class Test2 {
 	public int test() {
+		int art;
 		art = this.test();
-		int a;
 		while(art < (t+-5)) {
 			art = 5;
 		}
