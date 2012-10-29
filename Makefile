@@ -1,23 +1,27 @@
-CC = clang
-CFLAGS = -Wall -Wextra
+CC := clang
+CFLAGS := 
+DEBUG_CFLAGS := -Wall -Wextra
 DEST_DIR := ./build/
 
 all:	setup parser lexer test
-	
-test: test.c
-	$(CC) $(CFLAGS) -g -o $(DEST_DIR)parser -I. -I$(DEST_DIR) test.c $(DEST_DIR)parser.c $(DEST_DIR)lexer.c
+.PHONY: all
 
-setup:	.IGNORE
+debug:	setup parser lexer debug_test
 
-.IGNORE:
+setup:	
 	mkdir $(DEST_DIR)
 	
-
-parser:	setup parser.y
+parser: parser.y
 	bison -d -v -o $(DEST_DIR)parser.c parser.y
 
-lexer:	setup lexer.lex
+lexer: lexer.lex
 	flex -o $(DEST_DIR)lexer.c lexer.lex
+
+test:	test.c
+	$(CC) $(CFLAGS) -g -o $(DEST_DIR)parser -I. -I$(DEST_DIR) test.c $(DEST_DIR)parser.c $(DEST_DIR)lexer.c
+	
+debug_test: test.c
+	$(CC) $(DEBUG_CFLAGS) -o $(DEST_DIR)parser -I. -I$(DEST_DIR) test.c $(DEST_DIR)parser.c $(DEST_DIR)lexer.c
 
 clean:
 	rm -rf build test
