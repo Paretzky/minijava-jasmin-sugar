@@ -1,5 +1,6 @@
 %option nodefault
-%option bison-bridge bison-locations
+%option bison-locations
+%option noyywrap
 %{
 #include <ast.h>
 #include <parser.h>
@@ -7,7 +8,7 @@
 #define TOKEN(t) (yylval->token = t)
 #define RET_TOKEN(t) {int i = yylval->token = t;charNum += yyleng;return i;}
 uint32_t lineNum = 1, charNum = 1;
-extern int yywrap() { return 42; }
+
 %}
 %%
 "//".*"\n"			lineNum++;charNum=1;

@@ -10,6 +10,7 @@ extern char * yytext;
 void yyerror(char const *);
 struct varDeclaration * testDec;
 %}
+%define api.pure
 %locations
 %left PLUS MINUS
 %left MULTIPLY
