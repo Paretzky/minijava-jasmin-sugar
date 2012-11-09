@@ -3,34 +3,54 @@
 %{
 #define YYERROR_VERBOSE 1
 #define YYDEBUG 1
-#include <ast.h>
-extern int yylex();
-extern int lineNum, charNum;
-extern char * yytext;
-void yyerror(char const *);
-struct varDeclaration * testDec;
+#include<mjcc_driver.hh>
+
+extern "C"
+  {
+    int yyparse();
+    int yylex(void);
+    void yyerror(char *s){}
+  }
 %}
-%define api.pure
+%define parser_class_name "mjcc_parser"
+%code requires {
+     # include <string>
+     class mjcc_driver;
+     }
+%parse-param { mjcc_driver& driver }
+%lex-param   { mjcc_driver& driver }
 %locations
+%initial-action
+     {
+       // Initialize the initial location.
+ //      @$.begin.filename = @$.end.filename = &driver.file;
+     };
+%debug
+%error-verbose
+
+%skeleton "lalr1.cc"
 %left PLUS MINUS
 %left MULTIPLY
 %left BOOL_AND
 %left L_BRACKET L_PAREN
 %right BANG PERIOD EQUALS
-%nonassoc LESS_THAN
+%nonassoc LESS_THAN 
+
 %union {
-	int token;
-	char *string;
+	int		token;
+	int32_t		litInt;
+	std::string 	*string;
 }
-%token <string> IDENTIFIER LIT_INT TYPE
+%token <string> IDENTIFIER TYPE
+%token <litInt> LIT_INT
 %token <token> BOOL_AND LESS_THAN PLUS MINUS MULTIPLY EQUALS L_BRACE R_BRACE L_PAREN R_PAREN L_BRACKET R_BRACKET PERIOD LENGTH
 %token <token> TRUE FALSE NEW THIS CLASS PUBLIC STATIC VOID MAIN IF ELSE WHILE SOUT SEMICOLON INT BANG COMMA STRING BOOLEAN RETURN
-%token <token> EXTERN EXTENDS
+%token <token> EXTERN EXTENDS END
 
 %start Goal
 %%
 
-Goal:		Externs MainClass ClassDeclarations;
+Goal:		Externs MainClass ClassDeclarations END;
 
 Externs:	/* nothing or */
 	|	EXTERN Type IDENTIFIER L_PAREN MethodArgList R_PAREN SEMICOLON Externs;
@@ -112,7 +132,7 @@ ArgListRest: /* match nothing or */
 
 %%
 
-void yyerror (char const *s) {
-	 printf("Error at line %d, near col %d: %s (%s)\n", lineNum, charNum-1,s, yytext );
-	//printf("%s\n%d %d\n",s,yylloc.last_line,yylloc.last_column);
+void yy::mjcc_parser::error (const yy::mjcc_parser::location_type& l, const std::string& m) {
+	//driver.error (l, m);
+	
 }

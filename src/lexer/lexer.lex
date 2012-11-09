@@ -1,56 +1,84 @@
-%option nodefault
-%option bison-locations
-%option noyywrap
-%{
-#include <ast.h>
-#include <parser.h>
-#define SAVE_TOKEN /*yylval->string = strdup(yytext);*/charNum += yyleng
-#define TOKEN(t) (yylval->token = t)
-#define RET_TOKEN(t) {int i = yylval->token = t;charNum += yyleng;return i;}
-uint32_t lineNum = 1, charNum = 1;
+%option noyywrap nounput batch debug
+%{ 
+	# include <cstdlib>
+	# include <cerrno>
+		# include <climits>
+	# include <string>
+	# include "mjcc_driver.hh"
+	# include "parser.h"
 
+	# undef yywrap
+	# define yywrap() 1
+     
+	#define yyterminate() return token::END
+
+	# define YY_USER_ACTION  yylloc->columns (yyleng);
+
+	extern  int yylex();
 %}
 %%
-"//".*"\n"			lineNum++;charNum=1;
-"boolean"			RET_TOKEN(BOOLEAN);
-"&&"				RET_TOKEN(BOOL_AND);
-"<"				RET_TOKEN(LESS_THAN);
-"+"				RET_TOKEN(PLUS);
-"-"				RET_TOKEN(MINUS);
-"*"				RET_TOKEN(MULTIPLY);
-"="				RET_TOKEN(EQUALS);
-"{"				RET_TOKEN(L_BRACE);
-"}"				RET_TOKEN(R_BRACE);
-"("				RET_TOKEN(L_PAREN);
-")"				RET_TOKEN(R_PAREN);
-"["				RET_TOKEN(L_BRACKET);
-"]"				RET_TOKEN(R_BRACKET);
-"System.out.println"		RET_TOKEN(SOUT);
-"."				RET_TOKEN(PERIOD);
-"length"			RET_TOKEN(LENGTH);
-"true"				RET_TOKEN(TRUE);
-"false"				RET_TOKEN(FALSE);
-"new"				RET_TOKEN(NEW);
-"this"				RET_TOKEN(THIS);
-"class"				RET_TOKEN(CLASS);
-"public"			RET_TOKEN(PUBLIC);
-"static"			RET_TOKEN(STATIC);
-"void"				RET_TOKEN(VOID);
-"main"				RET_TOKEN(MAIN);
-"String"			RET_TOKEN(STRING);
-"if"				RET_TOKEN(IF);
-"else"				RET_TOKEN(ELSE);
-"while"				RET_TOKEN(WHILE);
-";"				RET_TOKEN(SEMICOLON);
-"int"				RET_TOKEN(INT);
-"!"				RET_TOKEN(BANG);
-","				RET_TOKEN(COMMA);
-"return"			RET_TOKEN(RETURN);
-"extern"			RET_TOKEN(EXTERN);
-"extends"			RET_TOKEN(EXTENDS);
-" "				charNum++;
-\t				charNum+=8;
-\n				lineNum++;charNum=1;
-[a-zA-Z][a-zA-Z0-9_-]*		SAVE_TOKEN; return IDENTIFIER;
-[0-9]+				SAVE_TOKEN; return LIT_INT;
-.				;
+%{
+	yylloc->step ();
+	typedef yy::mjcc_parser::token token;
+	
+%}
+"boolean"			return token::BOOLEAN;
+"&&"				return token::BOOL_AND;
+"<"				return token::LESS_THAN;
+"+"				return token::PLUS;
+"-"				return token::MINUS;
+"*"				return token::MULTIPLY;
+"="				return token::EQUALS;
+"{"				return token::L_BRACE;
+"}"				return token::R_BRACE;
+"("				return token::L_PAREN;
+")"				return token::R_PAREN;
+"["				return token::L_BRACKET;
+"]"				return token::R_BRACKET;
+"System.out.println"		return token::SOUT;
+"."				return token::PERIOD;
+"length"			return token::LENGTH;
+"true"				return token::TRUE;
+"false"				return token::FALSE;
+"new"				return token::NEW;
+"this"				return token::THIS;
+"class"				return token::CLASS;
+"public"			return token::PUBLIC;
+"static"			return token::STATIC;
+"void"				return token::VOID;
+"main"				return token::MAIN;
+"String"			return token::STRING;
+"if"				return token::IF;
+"else"				return token::ELSE;
+"while"				return token::WHILE;
+";"				return token::SEMICOLON;
+"int"				return token::INT;
+"!"				return token::BANG;
+","				return token::COMMA;
+"return"			return token::RETURN;
+"extern"			return token::EXTERN;
+"extends"			return token::EXTENDS;
+[a-zA-Z][a-zA-Z0-9_-]*		{
+					yylval->string = new std::string(yytext); return token::IDENTIFIER;
+				}
+[0-9]+				{
+					errno = 0;
+					long int l = strtol(yytext,NULL,10);
+					if (!(INT_MIN <= l && l <= INT_MAX && errno != ERANGE)) {
+						//driver.error (*yylloc, "integer is out of range");
+					}
+					yylval->litInt = (int32_t) l;
+					return token::LIT_INT;
+				}
+[ \t]+   			yylloc->step ();
+[\n]+      			yylloc->lines (yyleng); yylloc->step ();
+
+%%
+
+void mjcc_driver::scan_begin () {
+	yyin = stdin;
+}
+     
+void mjcc_driver::scan_end () {
+	fclose (yyin);
+}
