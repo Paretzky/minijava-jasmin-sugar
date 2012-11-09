@@ -11,6 +11,8 @@ extern "C"
     int yylex(void);
     void yyerror(char *s){}
   }
+
+extern "C" int yyparse (void);
 %}
 %define parser_class_name "mjcc_parser"
 %code requires {

@@ -11,8 +11,6 @@ This code started it's life at: http://www.gnu.org/software/bison/manual/html_no
        yylex (yy::mjcc_parser::semantic_type* yylval,yy::mjcc_parser::location_type* yylloc, mjcc_driver& driver)
 YY_DECL;
 
- extern "C" int yyparse (void);
-
 class mjcc_driver {
 public:
 	int result;
@@ -24,6 +22,16 @@ public:
 	void scan_begin();
 	void scan_end();
 	bool trace;
+
+	int parse () {
+      
+       scan_begin ();
+       yy::mjcc_parser parser (*this);
+       parser.set_debug_level (trace);
+       int res = parser.parse ();
+       scan_end ();
+       return res;
+     }
 };
 
 #endif // ! MJCC_HH
