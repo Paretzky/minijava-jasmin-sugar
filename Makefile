@@ -28,4 +28,4 @@ debug_test: test.c
 	$(CC) $(DEBUG_CFLAGS) -o $(DEST_DIR)parser -I$(INCLUDE_DIR) -I$(DEST_DIR) test.cc $(DEST_DIR)parser.c $(DEST_DIR)lexer.c
 
 clean:
-	rm -rf build test
+	rm -rf build
