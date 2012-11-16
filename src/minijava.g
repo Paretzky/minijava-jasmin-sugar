@@ -47,6 +47,8 @@ id	:	('a'..'z' | 'A'..'Z') ('a'..'z' | 'A'..'Z' | '0'..'9')*;
 
 LitInt	:	(PLUS | MINUS)? ('0'..'9')+;
 
+WS  :   (' '|'\t')+ {skip();} ;
+
 mainclass
 	:	CLASS id L_BRACE PUBLIC STATIC VOID MAIN L_PAREN STRING L_BRACKET R_BRACKET id R_PAREN L_BRACE statement R_BRACE R_BRACE;
 
