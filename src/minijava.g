@@ -10,7 +10,7 @@ tokens {
 	MAIN='main';
 	L_PAREN='(';
 	R_PAREN=')';
-	STRING='string';
+	STRING='String';
 	L_BRACKET='[';
 	R_BRACKET=']';
 	EQUALS='=';
@@ -41,71 +41,81 @@ tokens {
 	LESS_THAN='<';
 }
 
-goal	:	mainclass classdecls EOF;
+@members {
+    public static void main(String[] args) throws Exception {
+        minijavaLexer lex = new minijavaLexer(new ANTLRFileStream(args[0]));
+        CommonTokenStream tokens = new CommonTokenStream(lex);
+ 
+        minijavaParser parser = new minijavaParser(tokens);
+ 
+        try {
+            parser.goal();
+        } catch (RecognitionException e)  {
+            e.printStackTrace();
+        }
+    }
+}
 
-id	:	('a'..'z' | 'A'..'Z') ('a'..'z' | 'A'..'Z' | '0'..'9')*;
+goal	:	mainclass classdecls* EOF;
+
+ID 	:	('a'..'z' | 'A'..'Z') ('a'..'z' |'A'..'Z' |'0'..'9' )* ;
 
 LitInt	:	(PLUS | MINUS)? ('0'..'9')+;
 
-WS  :   (' '|'\t')+ {skip();} ;
+WHITESPACE : ( '\t' | ' ' | '\r' | '\n'| '\u000C' )+    { $channel = HIDDEN; } ;
+
+SINGLE_COMMENT: WHITESPACE * '//' ~('\n')* '\n' { $channel = HIDDEN; };
 
 mainclass
-	:	CLASS id L_BRACE PUBLIC STATIC VOID MAIN L_PAREN STRING L_BRACKET R_BRACKET id R_PAREN L_BRACE statement R_BRACE R_BRACE;
+	:	CLASS ID L_BRACE PUBLIC STATIC VOID MAIN L_PAREN STRING L_BRACKET R_BRACKET ID R_PAREN L_BRACE statement R_BRACE R_BRACE;
 
 classdecls
-	:	(CLASS id (EXTENDS id)? L_BRACE vardecl* methoddecls R_BRACE)*;
+	:	CLASS ID (EXTENDS ID)? L_BRACE vardecl* methoddecls* R_BRACE;
 	
 vardecl
-	:	type id SEMICOLON;
+	:	type ID SEMICOLON;
 	
 type
-	:	INT L_BRACKET R_BRACKET
-	|	id;
+	:	INT (L_BRACKET R_BRACKET)?
+	|	ID;
 	
 methoddecls
-	:	(PUBLIC type id L_PAREN methodarglist R_PAREN L_BRACE vardecl* statement* RETURN expression SEMICOLON R_BRACE)*;
+	:	PUBLIC type ID L_PAREN methodarglist? R_PAREN L_BRACE vardecl* statement* RETURN expression SEMICOLON R_BRACE;
 	
 methodarglist
-	:	type id (COMMA type id)*;
+	:	type ID (COMMA type ID)*;
 	
 statement
-	:	id EQUALS expression SEMICOLON
+	:	ID EQUALS expression SEMICOLON
 	|	L_BRACE statement+ R_BRACE
 	|	IF L_PAREN expression R_PAREN statement ELSE statement
 	|	WHILE L_PAREN expression R_PAREN statement
 	|	SOUT L_PAREN expression R_PAREN SEMICOLON
 	|	DO statement WHILE L_PAREN expression R_PAREN
-	|	FOR L_PAREN type id IN id R_PAREN statement
-	|	id L_BRACKET expression R_BRACKET EQUALS expression SEMICOLON;
+	|	FOR L_PAREN type ID IN ID R_PAREN statement
+	|	ID L_BRACKET expression R_BRACKET EQUALS expression SEMICOLON;
 	
 expression
-	:	postfixexpression
-	|	NEW id L_PAREN R_PAREN;
+	:	prefixexpression (options{greedy=true;}: PERIOD periodexpression)*;
+		
+periodexpression
+	:	LENGTH
+	|	ID L_PAREN (expression (options{greedy=true;}: COMMA expression)*)? R_PAREN;
 	
-postfixexpression
-	:	mainexpression 
-	(
-		(PERIOD (LENGTH | (id L_PAREN (expression (COMMA expression)*)? R_PAREN))) 
-		|
-		(L_BRACKET expression R_BRACKET)
-	)* 
-	|	plusminusexp expression;
+prefixexpression
+	:	NEW ID L_PAREN R_PAREN
+	|	NEW INT L_BRACKET expression R_BRACKET
+	|	addexpression (options{greedy=true;}: LESS_THAN addexpression)?;
 
-plusminusexp
-	:	multiplyexp (PLUS | MINUS) expression;
 	
-multiplyexp
-	:	andexp MULTIPLY expression;
+addexpression
+	:	 multiplyexpression (options{greedy=true;}: (PLUS | MINUS) multiplyexpression)*;
 	
-andexp	
-	:	cmpexp BOOL_AND expression;
-	
-cmpexp	
-	:	mainexpression LESS_THAN expression;
+multiplyexpression
+	:	andexpression (options{greedy=true;}: MULTIPLY andexpression)*;
 
-mainexpression
-	:	THIS
-	|	id
-	|	FALSE
-	|	TRUE
-	|	LitInt;
+andexpression
+	:	baseexpression (options{greedy=true;}: BOOL_AND baseexpression)*;
+	
+baseexpression
+	:	THIS | TRUE | FALSE | LitInt | ID | L_PAREN expression R_PAREN | BANG expression;
