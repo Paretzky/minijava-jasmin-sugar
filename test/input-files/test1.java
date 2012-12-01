@@ -1,19 +1,27 @@
-extern int abs();
-extern int max(int a, int b);
 class Test {
 	public static void main(String [] args) {
-		System.out.println(true);
+		System.out.println(new lol().test(lol));
 	}
-} // test1
-//test2
-//		test 5
+}
 class Test2 {
-	public int test() {
-		int art;
-		art = this.test();
-		while(art < (t+-5)) {
-			art = 5;
+	public int method() {
+		while(x < (15+lol)+1) {
+			System.out.println(15);
 		}
-		return a[5];
+		return 15;
+	}
+	public boolean dowhile(int a, int [] b) {
+		int [] c;
+		do {
+			System.out.println(c[b[a]]);
+		} while(a < b.length);
+		return c[b[a-1]]+5;
+	}
+	public int foreach(int [] ints) {
+		int sum;
+		for(int i in ints) {
+			sum = i+sum;
+		}
+		return sum;
 	}
 }
