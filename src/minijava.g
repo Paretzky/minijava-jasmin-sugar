@@ -1,5 +1,7 @@
 grammar minijava;
-
+options {
+	output=AST;
+}
 tokens {
 	CLASS='class';
 	L_BRACE='{';
@@ -53,14 +55,17 @@ tokens {
         } catch (RecognitionException e)  {
             e.printStackTrace();
         }
+        
     }
 }
 
 goal	:	mainclass classdecls* EOF;
 
-ID 	:	('a'..'z' | 'A'..'Z') ('a'..'z' |'A'..'Z' |'0'..'9' )* ;
+//goal	:	expression EOF;
 
-LitInt	:	(PLUS | MINUS)? ('0'..'9')+;
+ID 	:	('a'..'z' | 'A'..'Z' | '_') ('a'..'z' |'A'..'Z' |'0'..'9' | '_')* ;
+
+LitInt	:	 ('0'..'9')+;
 
 WHITESPACE : ( '\t' | ' ' | '\r' | '\n'| '\u000C' )+    { $channel = HIDDEN; } ;
 
@@ -77,7 +82,7 @@ vardecl
 	
 type
 	:	INT (L_BRACKET R_BRACKET)?
-	|	ID;
+	|	BOOLEAN | ID;
 	
 methoddecls
 	:	PUBLIC type ID L_PAREN methodarglist? R_PAREN L_BRACE vardecl* statement* RETURN expression SEMICOLON R_BRACE;
@@ -91,31 +96,73 @@ statement
 	|	IF L_PAREN expression R_PAREN statement ELSE statement
 	|	WHILE L_PAREN expression R_PAREN statement
 	|	SOUT L_PAREN expression R_PAREN SEMICOLON
-	|	DO statement WHILE L_PAREN expression R_PAREN
+	|	DO statement WHILE L_PAREN expression R_PAREN SEMICOLON
 	|	FOR L_PAREN type ID IN ID R_PAREN statement
 	|	ID L_BRACKET expression R_BRACKET EQUALS expression SEMICOLON;
+
+expression 
+	:	arithmeticexp (PERIOD postfixexp)*;
 	
+arrayaccessexp
+	:	L_BRACKET expression R_BRACKET;
+	
+postfixexp
+	:	LENGTH
+	|	ID L_PAREN (expression (COMMA expression)*)? R_PAREN;
+	
+arithmeticexp
+	:	addexp (LESS_THAN addexp)?
+	|	NEW ID L_PAREN R_PAREN
+	|	NEW INT L_BRACKET expression? R_BRACKET;
+	
+addexp	:	
+	multiplyexp ((PLUS multiplyexp) | (MINUS multiplyexp))*;
+	
+multiplyexp
+	:	andexp (MULTIPLY andexp)*;
+	
+andexp	:	atomexp (BOOL_AND atomexp)*;
+
+atomexp	:	 ((L_PAREN expression  R_PAREN 
+	| BANG expression 
+	| ID) arrayaccessexp*)
+	| LitInt | THIS | TRUE | FALSE;
+/*
+expr:   multExpr (('+'^|'-'^) multExpr)*
+    ; 
+
+multExpr
+    :   atom ('*'^ atom)*
+    ; 
+
+atom:   LitInt 
+    |   ID
+    |   '('! expr ')'!
+    ;
+
+/*
 expression
 	:	prefixexpression (options{greedy=true;}: PERIOD periodexpression)*;
-		
+
 periodexpression
 	:	LENGTH
-	|	ID L_PAREN (expression (options{greedy=true;}: COMMA expression)*)? R_PAREN;
-	
+	|	ID L_PAREN (expression (COMMA expression)*)? R_PAREN;
+
 prefixexpression
 	:	NEW ID L_PAREN R_PAREN
 	|	NEW INT L_BRACKET expression R_BRACKET
 	|	addexpression (options{greedy=true;}: LESS_THAN addexpression)?;
 
-	
+
 addexpression
-	:	 multiplyexpression (options{greedy=true;}: (PLUS | MINUS) multiplyexpression)*;
-	
+	:	 multiplyexpression ((PLUS^ | MINUS^) (options{greedy=true;}: multiplyexpression))*;
+
 multiplyexpression
-	:	andexpression (options{greedy=true;}: MULTIPLY andexpression)*;
+	:	andexpression (options{greedy=true;}: MULTIPLY^ andexpression)*;
 
 andexpression
-	:	baseexpression (options{greedy=true;}: BOOL_AND baseexpression)*;
-	
+	:	baseexpression (options{greedy=true;}: BOOL_AND^ baseexpression)*;
+
 baseexpression
-	:	THIS | TRUE | FALSE | LitInt | ID | L_PAREN expression R_PAREN | BANG expression;
+	:	THIS | TRUE | FALSE | LitInt | ID | L_PAREN (options{greedy=true;}: expression) R_PAREN | BANG expression;
+*/
