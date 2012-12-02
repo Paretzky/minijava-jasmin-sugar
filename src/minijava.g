@@ -127,33 +127,3 @@ newexp	:	NEW ID L_PAREN R_PAREN
 	|	primeexp;
 	
 primeexp:	ID | TRUE | FALSE | THIS | LitInt;
-
-/*
-expression 
-	:	arithmeticexp (PERIOD postfixexp)*;
-	
-arrayaccessexp
-	:	L_BRACKET expression R_BRACKET;
-	
-postfixexp
-	:	LENGTH
-	|	ID L_PAREN (expression (COMMA expression)*)? R_PAREN;
-	
-arithmeticexp
-	:	addexp (LESS_THAN addexp)?
-	|	NEW ID L_PAREN R_PAREN expression?
-	|	NEW INT L_BRACKET expression? R_BRACKET;
-	
-addexp	:	
-	multiplyexp ((PLUS multiplyexp) | (MINUS multiplyexp))*;
-	
-multiplyexp
-	:	andexp (MULTIPLY andexp)*;
-	
-andexp	:	atomexp (BOOL_AND atomexp)*;
-
-atomexp	:	 ((L_PAREN expression  R_PAREN 
-	| BANG expression 
-	| ID) arrayaccessexp*)
-	| LitInt | THIS | TRUE | FALSE;
-*/
