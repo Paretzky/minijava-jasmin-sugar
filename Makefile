@@ -4,7 +4,7 @@ DEBUG_CFLAGS := -Wall -Wextra
 DEST_DIR := ./build/
 
 GRAMMAR_FILE := ./src/minijava.g
-ANTLR_CP := /usr/share/java/antlr3-runtime.jar:/usr/share/java/antlr3.jar
+ANTLR_CP := /usr/share/java/antlr3.jar:/usr/share/java/antlr3-runtime.jar:/usr/share/java/stringtemplate.jar
 
 all:	setup grammar javac
 .PHONY: all
