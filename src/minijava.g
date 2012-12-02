@@ -99,7 +99,36 @@ statement
 	|	DO statement WHILE L_PAREN expression R_PAREN SEMICOLON
 	|	FOR L_PAREN type ID IN ID R_PAREN statement
 	|	ID L_BRACKET expression R_BRACKET EQUALS expression SEMICOLON;
+	
+expression
+	:	expln;
+	
+expln	:	expadd ((LESS_THAN | BOOL_AND) expadd)?;
 
+expadd	:	expmul ((PLUS|MINUS) expmul)*;
+
+expmul	:	bangexp (MULTIPLY bangexp)*;
+
+bangexp :	BANG? parenexp;
+
+parenexp 
+	:	L_PAREN expression R_PAREN ((PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN) | (PERIOD LENGTH))?
+	|	callexp;
+
+callexp	:	lengexp (PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN)?;
+
+lengexp	:	arrayexp (PERIOD LENGTH)?;
+
+arrayexp 
+	:	newexp (L_BRACKET expression R_BRACKET)*;
+	
+newexp	:	NEW ID L_PAREN R_PAREN
+	|	NEW INT L_BRACKET expression R_BRACKET
+	|	primeexp;
+	
+primeexp:	ID | TRUE | FALSE | THIS | LitInt;
+
+/*
 expression 
 	:	arithmeticexp (PERIOD postfixexp)*;
 	
@@ -112,7 +141,7 @@ postfixexp
 	
 arithmeticexp
 	:	addexp (LESS_THAN addexp)?
-	|	NEW ID L_PAREN R_PAREN
+	|	NEW ID L_PAREN R_PAREN expression?
 	|	NEW INT L_BRACKET expression? R_BRACKET;
 	
 addexp	:	
@@ -127,42 +156,4 @@ atomexp	:	 ((L_PAREN expression  R_PAREN
 	| BANG expression 
 	| ID) arrayaccessexp*)
 	| LitInt | THIS | TRUE | FALSE;
-/*
-expr:   multExpr (('+'^|'-'^) multExpr)*
-    ; 
-
-multExpr
-    :   atom ('*'^ atom)*
-    ; 
-
-atom:   LitInt 
-    |   ID
-    |   '('! expr ')'!
-    ;
-
-/*
-expression
-	:	prefixexpression (options{greedy=true;}: PERIOD periodexpression)*;
-
-periodexpression
-	:	LENGTH
-	|	ID L_PAREN (expression (COMMA expression)*)? R_PAREN;
-
-prefixexpression
-	:	NEW ID L_PAREN R_PAREN
-	|	NEW INT L_BRACKET expression R_BRACKET
-	|	addexpression (options{greedy=true;}: LESS_THAN addexpression)?;
-
-
-addexpression
-	:	 multiplyexpression ((PLUS^ | MINUS^) (options{greedy=true;}: multiplyexpression))*;
-
-multiplyexpression
-	:	andexpression (options{greedy=true;}: MULTIPLY^ andexpression)*;
-
-andexpression
-	:	baseexpression (options{greedy=true;}: BOOL_AND^ baseexpression)*;
-
-baseexpression
-	:	THIS | TRUE | FALSE | LitInt | ID | L_PAREN (options{greedy=true;}: expression) R_PAREN | BANG expression;
 */
