@@ -15,7 +15,7 @@ class Test2 {
 		do {
 			System.out.println(c[b[a]]);
 		} while(a < b.length+a);
-		return c[b[a-1]]+5-(b[(c[b-c[0]])+1]);
+		return c[b[a-1]]+5-(b[(c[b-c[0]])+1])+(new int[(1)+(b[a])]).length;
 	}
 	public int foreach(int [] ints) {
 		int sum;
