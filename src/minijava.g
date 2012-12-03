@@ -49,14 +49,39 @@ tokens {
         CommonTokenStream tokens = new CommonTokenStream(lex);
  
         minijavaParser parser = new minijavaParser(tokens);
- 
         try {
-            parser.goal();
+/*
+	CommonTree tree = (CommonTree)parser.goal().getTree();
+    DOTTreeGenerator gen = new DOTTreeGenerator();
+    org.antlr.stringtemplate.StringTemplate st = gen.toDOT(tree);
+    System.out.println(st);
+*/
+	parser.goal();
         } catch (RecognitionException e)  {
             e.printStackTrace();
         }
         
     }
+    static final TreeAdaptor tadaptor = new CommonTreeAdaptor() {
+	public Object create(Token payload) {
+		return new CommonTree(payload);
+	}
+	};
+    public static void printTree(CommonTree t, int indent) {
+	if ( t != null ) {
+		StringBuffer sb = new StringBuffer(indent);
+		
+		if (t.getParent() == null){
+			System.out.println(sb.toString() + t.getText().toString());	
+		}
+		for ( int i = 0; i < indent; i++ )
+			sb = sb.append("   ");
+		for ( int i = 0; i < t.getChildCount(); i++ ) {
+			System.out.println(sb.toString() + t.getChild(i).toString());
+			printTree((CommonTree)t.getChild(i), indent+1);
+		}
+	}
+}
 }
 
 goal	:	mainclass classdecls* EOF;
