@@ -9,6 +9,9 @@ The sugar, refers to <http://en.wikipedia.org/wiki/Syntactic_sugar> in my case I
 *  do-while: do { someStuff(); } while(condition);
 * for-in: for(int i in someIntArray) { someStuffWith(i); }
 
+## Milestone-One-Antlr
+Tag representing the second submission for parser.  Due to time constraints I moved from bison/flex/clang to antlr/jasmin.  This tag will take one file name as an argument, and output any syntactic errors.  If the input is valid, no output is generated.
+
 ## Dependencies 
 The following is the version of packages used for development.  Effort will be made later to ensure some level of portability.
 * java-1.7.0-openjdk-1.7.0.9-2.3.3.fc17.1.x86_64
