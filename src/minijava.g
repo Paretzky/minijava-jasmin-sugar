@@ -1,6 +1,7 @@
 grammar minijava;
 options {
 	output=AST;
+	ASTLabelType=CommonTree;
 }
 tokens {
 	CLASS='class';
@@ -41,8 +42,37 @@ tokens {
 	LENGTH='length';
 	BOOL_AND='&&';
 	LESS_THAN='<';
+	BLOCK;
+	VARDECLS;
+	METHODDECLS;
+	INTARRAY;
+	STATEMENT;
+	CALLEXP;
+	METHOD;
+	RETURN_TYPE;
+	NAME;
+	STATEMENTS;
+	METHOD_ARG_LIST;
+	GOAL;
+	MAIN_CLASS;
+	ADDITIONAL_CLASSES;
+	PUBLIC_STATIC_VOID_MAIN;
+	VAR_DECL;
+	STATEMENT;
+	ASSIGNMENT_STATEMENT;
+	LHS;
+	RHS;
+	IF_STATEMENT;
+	CONDITION;
+	WHILE_STATEMENT;
+	DO_WHILE_STATEMENT;
+	FOR_EACH_STATEMENT;
 }
 
+@parser::header{
+import  org.antlr.stringtemplate.*;
+import org.antlr.*;
+}
 @members {
     public static void main(String[] args) throws Exception {
         minijavaLexer lex = new minijavaLexer(new ANTLRFileStream(args[0]));
@@ -53,10 +83,15 @@ tokens {
 /*
 	CommonTree tree = (CommonTree)parser.goal().getTree();
     DOTTreeGenerator gen = new DOTTreeGenerator();
-    org.antlr.stringtemplate.StringTemplate st = gen.toDOT(tree);
+    StringTemplate st = gen.toDOT(tree);
     System.out.println(st);
+	minijavaParser.goal_return g = parser.goal();
+	System.out.println(((Tree)g.tree).toStringTree());
 */
-	parser.goal();
+CommonTree tree = (CommonTree)parser.goal().getTree();
+    DOTTreeGenerator gen = new DOTTreeGenerator();
+   StringTemplate  st = gen.toDOT(tree);
+    System.out.println(st);
         } catch (RecognitionException e)  {
             e.printStackTrace();
         }
@@ -84,7 +119,7 @@ tokens {
 }
 }
 
-goal	:	mainclass classdecls* EOF;
+goal	:	mainclass classdecls* EOF -> ^(GOAL mainclass ^(ADDITIONAL_CLASSES classdecls*));
 
 //goal	:	expression EOF;
 
@@ -97,50 +132,52 @@ WHITESPACE : ( '\t' | ' ' | '\r' | '\n'| '\u000C' )+    { $channel = HIDDEN; } ;
 SINGLE_COMMENT: WHITESPACE * '//' ~('\n')* '\n' { $channel = HIDDEN; };
 
 mainclass
-	:	CLASS ID L_BRACE PUBLIC STATIC VOID MAIN L_PAREN STRING L_BRACKET R_BRACKET ID R_PAREN L_BRACE statement R_BRACE R_BRACE;
+	:	CLASS ID L_BRACE PUBLIC STATIC VOID MAIN L_PAREN STRING L_BRACKET R_BRACKET ID R_PAREN L_BRACE statement R_BRACE R_BRACE -> ^(MAIN_CLASS ^(NAME ID) ^(PUBLIC_STATIC_VOID_MAIN statement));
 
 classdecls
-	:	CLASS ID (EXTENDS ID)? L_BRACE vardecl* methoddecls* R_BRACE;
+	:	CLASS n=ID (EXTENDS e=ID)? L_BRACE vardecl* methoddecl* R_BRACE -> ^(CLASS ^(NAME $n) ^(EXTENDS $e)? ^(VARDECLS vardecl*) ^(METHODDECLS methoddecl*));
 	
 vardecl
-	:	type ID SEMICOLON;
+	:	type ID SEMICOLON -> ^(VAR_DECL type ID);
 	
 type
-	:	INT (L_BRACKET R_BRACKET)?
-	|	BOOLEAN | ID;
+	:	INT L_BRACKET R_BRACKET -> INTARRAY
+	|	INT | BOOLEAN | ID;
 	
-methoddecls
-	:	PUBLIC type ID L_PAREN methodarglist? R_PAREN L_BRACE vardecl* statement* RETURN expression SEMICOLON R_BRACE;
+methoddecl
+	:	PUBLIC type ID L_PAREN methodarglist? R_PAREN L_BRACE vardecl* statement* RETURN expression SEMICOLON R_BRACE ->
+		^(METHOD ^(NAME ID) ^(RETURN_TYPE type)  ^(METHOD_ARG_LIST methodarglist)? ^(VARDECLS vardecl*) ^(STATEMENTS statement*) ^(RETURN expression));
 	
 methodarglist
-	:	type ID (COMMA type ID)*;
+	:	type ID -> ^(type ID)	
+	|	type ID (COMMA type ID)+ -> ^(COMMA ^(type ID)+);
 	
 statement
-	:	ID EQUALS expression SEMICOLON
-	|	L_BRACE statement+ R_BRACE
-	|	IF L_PAREN expression R_PAREN statement ELSE statement
-	|	WHILE L_PAREN expression R_PAREN statement
-	|	SOUT L_PAREN expression R_PAREN SEMICOLON
-	|	DO statement WHILE L_PAREN expression R_PAREN SEMICOLON
+	:	ID EQUALS expression SEMICOLON -> ^(ASSIGNMENT_STATEMENT ^(LHS ID) ^(RHS expression))
+	|	L_BRACE statement+ R_BRACE -> ^(BLOCK statement+)
+	|	IF L_PAREN e=expression R_PAREN s1=statement ELSE s2=statement -> ^(IF_STATEMENT ^(CONDITION $e) ^(IF $s1) ^(ELSE $s2))
+	|	WHILE L_PAREN expression R_PAREN statement -> ^(WHILE_STATEMENT ^(CONDITION expression) ^(STATEMENT statement))
+	|	SOUT L_PAREN expression R_PAREN SEMICOLON -> ^(SOUT expression)
+	|	DO statement WHILE L_PAREN expression R_PAREN SEMICOLON -> ^(DO_WHILE_STATEMENT ^(STATEMENT statement) ^(CONDITION expression))
 	|	FOR L_PAREN type ID IN ID R_PAREN statement
 	|	ID L_BRACKET expression R_BRACKET EQUALS expression SEMICOLON;
 	
 expression
 	:	expln;
 	
-expln	:	expadd ((LESS_THAN | BOOL_AND) expadd)?;
+expln	:	expadd ((LESS_THAN | BOOL_AND)^ expadd)?;
 
-expadd	:	expmul ((PLUS|MINUS) expmul)*;
+expadd	:	expmul ((PLUS|MINUS)^ expmul)*;
 
-expmul	:	bangexp (MULTIPLY bangexp)*;
+expmul	:	bangexp (MULTIPLY^ bangexp)*;
 
 bangexp :	BANG? parenexp;
 
 parenexp 
-	:	L_PAREN expression R_PAREN ((PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN) | (PERIOD LENGTH))?
+	:	L_PAREN! expression R_PAREN! ((PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN) | (PERIOD LENGTH))?
 	|	callexp;
 
-callexp	:	lengexp (PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN)?;
+callexp	:	lengexp rhs=(PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN)?;
 
 lengexp	:	arrayexp (PERIOD LENGTH)?;
 
