@@ -67,6 +67,10 @@ tokens {
 	WHILE_STATEMENT;
 	DO_WHILE_STATEMENT;
 	FOR_EACH_STATEMENT;
+	EXPRESSION;
+	ARRAY;
+	INDEX;
+	ARRAY_ASSIGNMENT_STATEMENT;
 }
 
 @parser::header{
@@ -157,10 +161,10 @@ statement
 	|	L_BRACE statement+ R_BRACE -> ^(BLOCK statement+)
 	|	IF L_PAREN e=expression R_PAREN s1=statement ELSE s2=statement -> ^(IF_STATEMENT ^(CONDITION $e) ^(IF $s1) ^(ELSE $s2))
 	|	WHILE L_PAREN expression R_PAREN statement -> ^(WHILE_STATEMENT ^(CONDITION expression) ^(STATEMENT statement))
-	|	SOUT L_PAREN expression R_PAREN SEMICOLON -> ^(SOUT expression)
+	|	SOUT L_PAREN expression R_PAREN SEMICOLON -> ^(SOUT ^(EXPRESSION expression))
 	|	DO statement WHILE L_PAREN expression R_PAREN SEMICOLON -> ^(DO_WHILE_STATEMENT ^(STATEMENT statement) ^(CONDITION expression))
-	|	FOR L_PAREN type ID IN ID R_PAREN statement
-	|	ID L_BRACKET expression R_BRACKET EQUALS expression SEMICOLON;
+	|	FOR L_PAREN type a=ID IN b=ID R_PAREN statement -> ^(FOR_EACH_STATEMENT ^(IN ^(VAR_DECL type $a) $b) ^(STATEMENT statement))
+	|	a=ID L_BRACKET e1=expression R_BRACKET EQUALS e2=expression SEMICOLON -> ^(ARRAY_ASSIGNMENT_STATEMENT ^(LHS ^(ARRAY $a) ^(INDEX $e1)) ^(RHS $e2));
 	
 expression
 	:	expln;

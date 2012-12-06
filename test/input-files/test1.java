@@ -4,8 +4,13 @@ class Test {
 	}
 }
 class Test2 {
+	int testInt;
+	int [] testIntArr;
+	int [] intArr2;
+	boolean bool;
 	public int method() {
-		while(x < (15+lol)+1) {
+		intArr2[a+b*8] = 15;
+		while(x < (15+ol)+1) {
 			System.out.println(15);
 		}
 		return 15;
@@ -21,6 +26,11 @@ class Test2 {
 		int sum;
 		for(int i in ints) {
 			sum = i+sum;
+		}
+				if(5 && false) {
+			a = b;
+		} else {
+			a = c;
 		}
 		return sum;
 	}
