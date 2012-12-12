@@ -9,6 +9,9 @@ The sugar, refers to <http://en.wikipedia.org/wiki/Syntactic_sugar> in my case I
 *  do-while: do { someStuff(); } while(condition);
 * for-in: for(int i in someIntArray) { someStuffWith(i); }
 
+## Notes
+For now, to run you will have to make, then cd into build and run: ```bash java -cp /usr/share/java/stringtemplate.jar:/usr/share/java/antlr3.jar:/usr/share/java/antlr3-runtime.jar:/usr/share/java/antlr.jar:. com.benparetzky.minijavajasminsugar.MinijavaCompiler ```
+
 ## Milestone-One-Antlr
 Tag representing the second submission for parser.  Due to time constraints I moved from bison/flex/clang to antlr/jasmin.  This tag will take one file name as an argument, and output any syntactic errors.  If the input is valid, no output is generated. Demoed on 12/3/2012
 

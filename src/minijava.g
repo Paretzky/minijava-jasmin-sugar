@@ -77,55 +77,13 @@ tokens {
 	ARRAY_ACCESS;
 	BOOLEAN_INVERT;
 }
-
+@lexer::header{
+package com.benparetzky.minijavajasminsugar;
+}
 @parser::header{
+package com.benparetzky.minijavajasminsugar;
 import  org.antlr.stringtemplate.*;
 import org.antlr.*;
-}
-@members {
-    public static void main(String[] args) throws Exception {
-        minijavaLexer lex = new minijavaLexer(new ANTLRFileStream(args[0]));
-        CommonTokenStream tokens = new CommonTokenStream(lex);
- 
-        minijavaParser parser = new minijavaParser(tokens);
-        try {
-/*
-	CommonTree tree = (CommonTree)parser.goal().getTree();
-    DOTTreeGenerator gen = new DOTTreeGenerator();
-    StringTemplate st = gen.toDOT(tree);
-    System.out.println(st);
-	minijavaParser.goal_return g = parser.goal();
-	System.out.println(((Tree)g.tree).toStringTree());
-*/
-CommonTree tree = (CommonTree)parser.goal().getTree();
-    DOTTreeGenerator gen = new DOTTreeGenerator();
-   StringTemplate  st = gen.toDOT(tree);
-    System.out.println(st);
-        } catch (RecognitionException e)  {
-            e.printStackTrace();
-        }
-        
-    }
-    static final TreeAdaptor tadaptor = new CommonTreeAdaptor() {
-	public Object create(Token payload) {
-		return new CommonTree(payload);
-	}
-	};
-    public static void printTree(CommonTree t, int indent) {
-	if ( t != null ) {
-		StringBuffer sb = new StringBuffer(indent);
-		
-		if (t.getParent() == null){
-			System.out.println(sb.toString() + t.getText().toString());	
-		}
-		for ( int i = 0; i < indent; i++ )
-			sb = sb.append("   ");
-		for ( int i = 0; i < t.getChildCount(); i++ ) {
-			System.out.println(sb.toString() + t.getChild(i).toString());
-			printTree((CommonTree)t.getChild(i), indent+1);
-		}
-	}
-}
 }
 
 goal	:	mainclass classdecls* EOF -> ^(GOAL mainclass ^(ADDITIONAL_CLASSES classdecls*));
