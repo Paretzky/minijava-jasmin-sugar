@@ -75,6 +75,7 @@ tokens {
 	CALL;
 	PARAMS_LIST;
 	ARRAY_ACCESS;
+	BOOLEAN_INVERT;
 }
 
 @parser::header{
@@ -180,7 +181,7 @@ expadd	:	expmul ((PLUS|MINUS)^ expmul)*;
 
 expmul	:	bangexp (MULTIPLY^ bangexp)*;
 
-bangexp :	BANG? parenexp;
+bangexp :	b=BANG? parenexp -> {b != null}? ^(BOOLEAN_INVERT parenexp) -> parenexp;
 
 parenexp 
 	:	L_PAREN! expression R_PAREN! ((PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN) | (PERIOD LENGTH))?
