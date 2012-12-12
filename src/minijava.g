@@ -71,6 +71,10 @@ tokens {
 	ARRAY;
 	INDEX;
 	ARRAY_ASSIGNMENT_STATEMENT;
+	ADDITIONAL_CLASS;
+	CALL;
+	PARAMS_LIST;
+	ARRAY_ACCESS;
 }
 
 @parser::header{
@@ -139,7 +143,7 @@ mainclass
 	:	CLASS ID L_BRACE PUBLIC STATIC VOID MAIN L_PAREN STRING L_BRACKET R_BRACKET ID R_PAREN L_BRACE statement R_BRACE R_BRACE -> ^(MAIN_CLASS ^(NAME ID) ^(PUBLIC_STATIC_VOID_MAIN statement));
 
 classdecls
-	:	CLASS n=ID (EXTENDS e=ID)? L_BRACE vardecl* methoddecl* R_BRACE -> ^(CLASS ^(NAME $n) ^(EXTENDS $e)? ^(VARDECLS vardecl*) ^(METHODDECLS methoddecl*));
+	:	CLASS n=ID (EXTENDS e=ID)? L_BRACE vardecl* methoddecl* R_BRACE -> ^(ADDITIONAL_CLASS ^(NAME $n) ^(EXTENDS $e)? ^(VARDECLS vardecl*) ^(METHODDECLS methoddecl*));
 	
 vardecl
 	:	type ID SEMICOLON -> ^(VAR_DECL type ID);
@@ -161,7 +165,7 @@ statement
 	|	L_BRACE statement+ R_BRACE -> ^(BLOCK statement+)
 	|	IF L_PAREN e=expression R_PAREN s1=statement ELSE s2=statement -> ^(IF_STATEMENT ^(CONDITION $e) ^(IF $s1) ^(ELSE $s2))
 	|	WHILE L_PAREN expression R_PAREN statement -> ^(WHILE_STATEMENT ^(CONDITION expression) ^(STATEMENT statement))
-	|	SOUT L_PAREN expression R_PAREN SEMICOLON -> ^(SOUT ^(EXPRESSION expression))
+	|	SOUT L_PAREN expression R_PAREN SEMICOLON -> ^(SOUT expression)
 	|	DO statement WHILE L_PAREN expression R_PAREN SEMICOLON -> ^(DO_WHILE_STATEMENT ^(STATEMENT statement) ^(CONDITION expression))
 	|	FOR L_PAREN type a=ID IN b=ID R_PAREN statement -> ^(FOR_EACH_STATEMENT ^(IN ^(VAR_DECL type $a) $b) ^(STATEMENT statement))
 	|	a=ID L_BRACKET e1=expression R_BRACKET EQUALS e2=expression SEMICOLON -> ^(ARRAY_ASSIGNMENT_STATEMENT ^(LHS ^(ARRAY $a) ^(INDEX $e1)) ^(RHS $e2));
@@ -169,7 +173,8 @@ statement
 expression
 	:	expln;
 	
-expln	:	expadd ((LESS_THAN | BOOL_AND)^ expadd)?;
+expln	:
+	expadd ((LESS_THAN | BOOL_AND)^ expadd)?;
 
 expadd	:	expmul ((PLUS|MINUS)^ expmul)*;
 
@@ -181,15 +186,19 @@ parenexp
 	:	L_PAREN! expression R_PAREN! ((PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN) | (PERIOD LENGTH))?
 	|	callexp;
 
-callexp	:	lengexp rhs=(PERIOD ID L_PAREN (expression(COMMA expression)*)? R_PAREN)?;
+//callexp	:	lengexp  (PERIOD ID L_PAREN (expression (COMMA expression)* )? R_PAREN)?;
+
+callexp	:	lhs=lengexp  rhs=periodexp? -> {$rhs.text != null && !$rhs.text.equals("")}? ^(CALLEXP ^(LHS $lhs) ^(RHS $rhs)*) -> $lhs;
+
+periodexp:	 (PERIOD ID L_PAREN (e1=expression (COMMA e2+=expression)* )? R_PAREN) r=((periodexp|(L_BRACKET expression R_BRACKET))*) -> ^(CALL ^(NAME ID) ^(PARAMS_LIST $e1 $e2+)? (^(RHS $r))*);
 
 lengexp	:	arrayexp (PERIOD LENGTH)?;
 
 arrayexp 
-	:	newexp (L_BRACKET expression R_BRACKET)*;
+	:	newexp rhs=((L_BRACKET expression R_BRACKET)*) -> {$rhs.text != null && !$rhs.text.equals("")}? ^(ARRAY_ACCESS ^(ARRAY newexp) ^(INDEX expression)+) -> newexp;
 	
-newexp	:	NEW ID L_PAREN R_PAREN
-	|	NEW INT L_BRACKET expression R_BRACKET
+newexp	:	NEW ID L_PAREN R_PAREN -> ^(NEW ID)
+	|	NEW INT L_BRACKET expression R_BRACKET -> ^(NEW INTARRAY ^(LENGTH expression))
 	|	primeexp;
 	
 primeexp:	ID | TRUE | FALSE | THIS | LitInt;
