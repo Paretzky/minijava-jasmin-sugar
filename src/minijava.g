@@ -190,12 +190,12 @@ parenexp
 
 callexp	:	lhs=lengexp  rhs=periodexp? -> {$rhs.text != null && !$rhs.text.equals("")}? ^(CALLEXP ^(LHS $lhs) ^(RHS $rhs)*) -> $lhs;
 
-periodexp:	 (PERIOD ID L_PAREN (e1=expression (COMMA e2+=expression)* )? R_PAREN) r=((periodexp|(L_BRACKET expression R_BRACKET))*) -> ^(CALL ^(NAME ID) ^(PARAMS_LIST $e1 $e2+)? (^(RHS $r))*);
+periodexp:	 (PERIOD ID L_PAREN (e1=expression (COMMA e2+=expression)* )? R_PAREN) r=((periodexp|(L_BRACKET expression R_BRACKET))*) -> ^(CALL ^(NAME ID) ^(PARAMS_LIST $e1 $e2*)? (^(RHS $r))*);
 
 lengexp	:	arrayexp (PERIOD LENGTH)?;
 
 arrayexp 
-	:	newexp rhs=((L_BRACKET expression R_BRACKET)*) -> {$rhs.text != null && !$rhs.text.equals("")}? ^(ARRAY_ACCESS ^(ARRAY newexp) ^(INDEX expression)+) -> newexp;
+	:	newexp (L_BRACKET rhs+=expression R_BRACKET)* ->  {$rhs != null}? ^(ARRAY_ACCESS ^(ARRAY newexp) ^(INDEX $rhs)*) -> newexp;
 	
 newexp	:	NEW ID L_PAREN R_PAREN -> ^(NEW ID)
 	|	NEW INT L_BRACKET expression R_BRACKET -> ^(NEW INTARRAY ^(LENGTH expression))
