@@ -82,6 +82,18 @@ public class MinijavaCompiler {
 						scope.put(t2.getChild(1).toString(),t2.getChild(0).toString());
 					}
 				}
+				if(t.toString().equals("METHOD_ARG_LIST") && t.getChildren() != null) {
+					if(!t.getChild(0).toString().equals(",")) {
+//						System.out.println("AAAAAAAAAAA\t\t" + t.getChild(0).getChild(0));
+						scope.put(t.getChild(0).getChild(0).toString(), t.getChild(0).toString());
+					} else {
+						for(Object o2 : ((BaseTree)t.getChild(0)).getChildren()) {
+							BaseTree t2 = (BaseTree) o2;
+//							System.out.println("BBB\t\t" +  t2.toString());
+							scope.put(t2.getChild(0).toString(),t2.toString());
+						}
+					}
+				}
 			}
 			scopes.put(ret,scope);
 			return;
