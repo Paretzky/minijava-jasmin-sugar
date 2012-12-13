@@ -1,6 +1,6 @@
 class Test {
 	public static void main(String [] args) {
-		System.out.println(new lol().test(lol));
+		System.out.println(new Test2().method());
 	}
 }
 class Test2 {
@@ -8,9 +8,10 @@ class Test2 {
 	int [] testIntArr;
 	int [] intArr2;
 	boolean bool;
-	public int method() {
-		intArr2[a+b*8] = 15;
-		while(x < (15+ol)+1) {
+	public int method(int bee) {
+		testInt = intArr2[10][10-bee][0];
+		intArr2[testInt+intArr2[0]*8] = 15;
+		while(!(testInt < (15+testInt)+1)) {
 			System.out.println(15);
 		}
 		return 15;
