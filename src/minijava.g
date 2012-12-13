@@ -76,6 +76,7 @@ tokens {
 	PARAMS_LIST;
 	ARRAY_ACCESS;
 	BOOLEAN_INVERT;
+	REFERENCE;
 }
 @lexer::header{
 package com.benparetzky.minijavajasminsugar;
@@ -160,4 +161,4 @@ newexp	:	NEW ID L_PAREN R_PAREN -> ^(NEW ID)
 	|	NEW INT L_BRACKET expression R_BRACKET -> ^(NEW INTARRAY ^(LENGTH expression))
 	|	primeexp;
 	
-primeexp:	ID | TRUE | FALSE | THIS | LitInt;
+primeexp:	ID -> ^(REFERENCE ID) | TRUE | FALSE | THIS | LitInt;
