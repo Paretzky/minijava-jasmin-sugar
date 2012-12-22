@@ -27,26 +27,76 @@ public class ASTBuilder {
 	public GoalNode build(char [] input) {
 		
 	}
-	static abstract class ASTNode { }
+	static abstract class ASTNode { 
+		abstract String toStringTree();
+	}
 	public static class GoalNode extends ASTNode {
 		MainClassNode mainClass;
 		List<AdditionalClassNode> additionalClasses;
-		GoalNode() {
-
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(GOAL ");
+			sb.append(mainClass.toStringTree());
+			sb.append(" ");
+			sb.append(additionalClasses.toStringTree());
+			sb.append(" )");
+			return sb.toString();
 		}
 	}
 	public static class MainClassNode extends ASTNode {
 		String name;
 		StatementNode main;
-		MainClassNode() {
-			
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(MAIN_CLASS (NAME ");
+			sb.append(main);
+			sb.append(") (PUBLIC_STATIC_VOID_MAIN ");
+			sb.append(main.toStringTree());
+			sb.append(" )");
+			return sb.toString();
 		}
+	}
+	public static class AdditionalClassNode extends ASTNode {
+		String name, extendsIdent;
+		List<VarDeclNode> varDecls;
+		List<MethodDeclNode> methodDecls;
+	}
+	public static class VarDeclNode extends ASTNode {
+		String type, ident;
+	}
+	public static class MethodDeclNode extends ASTNode {
+		String name, returnType;
+		List<VarDeclNode> varDecls;
+		List<Statement> statements;
 	}
 	public static class StatementNode extends ASTNode { }
 	public static class AssignmentStatementNode extends StatementNode {
 		ReferenceAccessNode lhs;
 		ExpressionNode rhs;
 	}
+	public static class ArrayAssignmentStatementNode extends AssignmentStatementNode {
+		int index;
+	}
+	public static class BlockNode extends StatementNode {
+		List<StatementNode> statements;
+	}
+	public static class IfNode extends StatementNode {
+		Expression condition;
+		Statement onTrue, onFalse;
+	}
+	public static class WhileNode extends StatementNode {
+		Expression condition;
+		Statement statement;
+	}
+	public static class SoutNode extends StatementNode {
+		Expression sout;
+	}
+	public static class DoWhileNode extends WhileNode {}
+	public static class ForEachNode extends StatementNode {
+		VarDeclNode local;
+		ReferenceAccessNode arrayIdent;
+		Statement statement;
+	}	
 	public static class ExpressionNode extends ASTNode {}
 	public static class NewExpNode extends ASTNode {
 		String ident;
