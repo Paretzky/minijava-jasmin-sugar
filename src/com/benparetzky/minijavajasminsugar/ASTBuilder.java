@@ -24,7 +24,26 @@ public class ASTBuilder {
 		return start+lastI;
 	}
 */
-	public GoalNode build(char [] input) {
+    static boolean validStart(Queue<Character> in) {
+        if(in.peek() == '(')
+            return in.poll() != null;
+        return false;
+    }
+    static String getTok(Queue<Character> in) {
+        StringBuilder sb = new StringBuilder();
+        Character c;
+        while((c = in.peek()) != '(' && c != ' ' && c != ')') {
+            sb.append(in.poll());
+        }
+        return sb.toString();
+    }
+    static void parseError() {
+        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+            System.err.println(ste);
+        }
+        throw new IllegalArgumentException("");
+    }
+	public GoalNode build(Queue<Character> input) {
 		      return null;
 	}
 	static abstract class ASTNode { 
@@ -33,6 +52,23 @@ public class ASTBuilder {
 	public static class GoalNode extends ASTNode {
 		MainClassNode mainClass;
 		List<AdditionalClassNode> additionalClasses;
+        GoalNode(Queue<Character> in) {
+            if(!validStart(in)) {
+                parseError();
+            }
+            if(getTok(in) != "GOAL") {
+                parseError();
+            }
+            mainClass = new MainClassNode(in);
+            AdditionalClassNode n = new AdditionalClassNode(in);
+            if(!n.isNull) {
+                additionalClasses = new LinkedList<AdditionalClassNode>();
+                additionalClasses.add(n);
+                while((n =  new AdditionalClassNode(in)).isNull) {
+                    additionalClasses.add(n);
+                }
+            }
+        }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(GoalNode ");
@@ -53,6 +89,9 @@ public class ASTBuilder {
 	public static class MainClassNode extends ASTNode {
 		String name;
 		StatementNode main;
+        MainClassNode(Queue<Character> in) {
+
+        }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(MainClassNode (NAME ");
@@ -65,9 +104,13 @@ public class ASTBuilder {
 	}
 	public static class AdditionalClassNode extends ASTNode {
 		//^(ADDITIONAL_CLASS ^(NAME $n) ^(EXTENDS $e)? ^(VARDECLS vardecl*) ^(METHODDECLS methoddecl*));
+        boolean isNull;
 		String name, extendsIdent;
 		List<VarDeclNode> varDecls;
 		List<MethodDeclNode> methodDecls;
+        AdditionalClassNode(Queue<Character> in) {
+
+        })
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(AdditionalClassNode (NAME ");
