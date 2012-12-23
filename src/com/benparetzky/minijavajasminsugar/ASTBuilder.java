@@ -294,8 +294,108 @@ public class ASTBuilder {
 		List<VarDeclNode> varDecls, argList;
 		List<StatementNode> statements;
 		ExpressionNode returnExp;
+        boolean isNull;
         MethodDeclNode(Queue<Character> in) {
-
+            if(!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if(!"METHOD".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            if(!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if(!"NAME".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            name = getTok(in);
+            if(!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if(!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if(!"RETURN_TYPE".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            returnType = getTok(in);
+            if(!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if(!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            String tok;
+            if("METHOD_ARG_LIST".equals(getTok(in))) {
+                VarDeclNode arg;
+                argList = new LinkedList<VarDeclNode>();
+                while(!(arg = new VarDeclNode(in)).isNull) {
+                    argList.add(arg);
+                }
+                if(!validEnd(in)) {
+                    isNull = true;
+                    return;
+                }
+                if(!validStart(in)) {
+                    isNull = true;
+                    return;
+                }
+                tok = getTok(in);
+            }
+            if("VARDECLS".equals(getTok(in))) {
+                VarDeclNode arg;
+                varDecls = new LinkedList<VarDeclNode>();
+                while(!(arg = new VarDeclNode(in)).isNull) {
+                    varDecls.add(arg);
+                }
+                if(!validEnd(in)) {
+                    isNull = true;
+                    return;
+                }
+                if(!validStart(in)) {
+                    isNull = true;
+                    return;
+                }
+                tok = getTok(in);
+            }
+            if("STATEMENTS".equals(getTok(in))) {
+                StatementNode arg;
+                statements = new LinkedList<StatementNode>();
+                while((arg = StatementNode.constructStatement(in)) != null && !arg.isNull) {
+                    statements.add(arg);
+                }
+                if(!validEnd(in)) {
+                    isNull = true;
+                    return;
+                }
+                if(!validStart(in)) {
+                    isNull = true;
+                    return;
+                }
+                tok = getTok(in);
+            }
+            if(!"RETURN".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            returnExp = ExpressionNode.constructExpression(in);
+            if(!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if(!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
@@ -332,6 +432,7 @@ public class ASTBuilder {
 		}
 	}
 	public abstract static class StatementNode extends ASTNode {
+        boolean isNull;
         static StatementNode constructStatement(Queue<Character> in) {
             return null;
         }
@@ -444,7 +545,11 @@ public class ASTBuilder {
 			return sb.toString();
 		}
 	}	
-	public abstract static class ExpressionNode extends ASTNode {}
+	public abstract static class ExpressionNode extends ASTNode {
+        static ExpressionNode constructExpression(Queue<Character> in) {
+            return null;
+        }
+    }
 	public static class CallExpNode extends ExpressionNode {
 		ExpressionNode lhs,rhs;
 		String toStringTree() {
