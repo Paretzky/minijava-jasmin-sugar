@@ -10,6 +10,7 @@ public class ASTBuilder {
         Scanner in = new Scanner(System.in);
         while(in.hasNext()) {
             sb.append(in.next());
+            sb.append(' ');
         }
         for(char c : sb.toString().toCharArray())
             q.add(c);
@@ -50,6 +51,7 @@ public class ASTBuilder {
         while ((c = in.peek()) == ' ') {
             in.poll();
         }
+        System.out.println("\t" + sb.toString());
         return sb.toString();
     }
 
@@ -297,7 +299,7 @@ public class ASTBuilder {
             StringBuilder sb = new StringBuilder();
             sb.append("(VarDeclNode (NAME ");
             sb.append(ident);
-            sb.append(") (TYPE");
+            sb.append(") (TYPESystem.out.println");
             sb.append(type);
             sb.append(" )");
             return sb.toString();
@@ -487,7 +489,7 @@ public class ASTBuilder {
             if ("WHILE_STATEMENT".equals(tok)) {
                 return new WhileNode(in);
             }
-            if ("SOUT".equals(tok)) {
+            if ("System.out.println".equals(tok)) {
                 return new SoutNode(in);
             }
             if ("DO_WHILE_STATEMENT".equals(tok)) {
