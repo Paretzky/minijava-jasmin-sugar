@@ -448,16 +448,65 @@ public class ASTBuilder {
     }
 
     public abstract static class StatementNode extends ASTNode {
+        //All instance's constructors will have an extra closing paren
         boolean isNull;
+        private static final StatementNode nullNode = null;
 
+        /*
+        ^(ASSIGNMENT_STATEMENT ^(LHS ID) ^(RHS expression))
+        ^(BLOCK statement+)
+        ^(IF_STATEMENT ^(CONDITION $e) ^(IF $s1) ^(ELSE $s2)) ^(CONDITION expression) ^(STATEMENT statement))
+        ^(WHILE_STATEMENT ^(CONDITION expression) ^(STATEMENT statement))
+        ^(SOUT expression)
+        ^(DO_WHILE_STATEMENT ^(STATEMENT statement) ^(CONDITION expression))
+        ^(FOR_EACH_STATEMENT ^(IN ^(VAR_DECL type $a) $b) ^(STATEMENT statement))
+        ^(ARRAY_ASSIGNMENT_STATEMENT ^(LHS ^(ARRAY $a) ^(INDEX $e1)) ^(RHS $e2))
+         */
         static StatementNode constructStatement(Queue<Character> in) {
-            return null;
+            String tok;
+            if (!validStart(in)) {
+                return nullNode;
+            }
+            tok = getTok(in);
+            if(tok == null) {
+                return nullNode;
+            }
+            if("ASSIGNMENT_STATEMENT".equals(tok)) {
+                return new AssignmentStatementNode(in);
+            }
+            if("BLOCK".equals(tok)) {
+                return new BlockNode(in);
+            }
+            if("IF_STATEMENT".equals(tok)) {
+                return new IfNode(in);
+            }
+            if("WHILE_STATEMENT".equals(tok)) {
+                return new WhileNode(in);
+            }
+            if("SOUT".equals(tok)) {
+                return new SoutNode(in);
+            }
+            if("DO_WHILE_STATEMENT".equals(tok)) {
+                return new DoWhileNode(in);
+            }
+            if("FOR_EACH_STATEMENT".equals(tok)) {
+                return new ForEachNode(in);
+            }
+            if("ARRAY_ASSIGNMENT_STATEMENT".equals(tok)) {
+                return new ArrayAssignmentStatementNode(in);
+            }
+            return nullNode;
         }
     }
 
     public static class AssignmentStatementNode extends StatementNode {
         ReferenceAccessNode lhs;
         ExpressionNode rhs;
+        int index;
+
+        AssignmentStatementNode(Queue<Character> in) {
+
+        }
 
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
@@ -471,8 +520,10 @@ public class ASTBuilder {
     }
 
     public static class ArrayAssignmentStatementNode extends AssignmentStatementNode {
-        int index;
 
+        ArrayAssignmentStatementNode(Queue<Character> in) {
+                super(in);
+        }
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
             sb.append("(AssignmentStatementNode (LHS ");
@@ -488,6 +539,10 @@ public class ASTBuilder {
 
     public static class BlockNode extends StatementNode {
         List<StatementNode> statements;
+
+        BlockNode(Queue<Character> in) {
+
+        }
 
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
@@ -507,6 +562,10 @@ public class ASTBuilder {
         StatementNode onTrue, onFalse;
 
         // ^(IF_STATEMENT ^(CONDITION $e) ^(IF $s1) ^(ELSE $s2))
+        IfNode(Queue<Character> in) {
+
+        }
+
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
             sb.append("(IfNode (CONDITION ");
@@ -524,6 +583,10 @@ public class ASTBuilder {
         ExpressionNode condition;
         StatementNode statement;
 
+        WhileNode(Queue<Character> in) {
+
+        }
+
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
             sb.append("(WhileNode (CONDITION ");
@@ -538,6 +601,10 @@ public class ASTBuilder {
     public static class SoutNode extends StatementNode {
         ExpressionNode sout;
 
+        SoutNode(Queue<Character> in) {
+
+        }
+
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
             sb.append("(SoutNode ");
@@ -548,6 +615,11 @@ public class ASTBuilder {
     }
 
     public static class DoWhileNode extends WhileNode {
+
+        DoWhileNode(Queue<Character> in) {
+            super(in);
+        }
+
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
             sb.append("(WhileNode (STATEMENT  ");
@@ -560,10 +632,14 @@ public class ASTBuilder {
     }
 
     public static class ForEachNode extends StatementNode {
-        //^(FOR_EACH_STATEMENT ^(IN ^(VAR_DECL type $a) $b) ^(STATEMENT statement))
         VarDeclNode local;
         String arrayIdent;
         StatementNode statement;
+
+        //^(FOR_EACH_STATEMENT ^(IN ^(VAR_DECL type $a) $b) ^(STATEMENT statement))
+        ForEachNode(Queue<Character> in) {
+
+        }
 
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
