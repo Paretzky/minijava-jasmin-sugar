@@ -619,8 +619,17 @@ public class ASTBuilder {
     public static class BlockNode extends StatementNode {
         List<StatementNode> statements;
 
+        //^(BLOCK statement+)
         BlockNode(Queue<Character> in) {
-
+            StatementNode n;
+            statements = new LinkedList<StatementNode>();
+            while((n = StatementNode.constructStatement(in)) != null && !n.isNull) {
+                statements.add(n);
+            }
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
 
         String toStringTree() {
