@@ -30,11 +30,16 @@ public class ASTBuilder {
         return false;
     }
     static boolean validEnd(Queue<Character> in) {
-        Character c;
-        while((c = in.peek()) == ' ') {
+        while((!in.isEmpty()) && in.peek().charValue() == ' ') {
             in.poll();
         }
-        return in.poll().charValue() == ')';
+        if(in.size() == 0)
+            return false;
+        if(in.peek().charValue() == ')') {
+            in.poll();
+            return true;
+        }
+        return false;
     }
     static String getTok(Queue<Character> in) {
         StringBuilder sb = new StringBuilder();
@@ -102,6 +107,7 @@ public class ASTBuilder {
 	public static class MainClassNode extends ASTNode {
 		String name;
 		StatementNode main;
+        //^(MAIN_CLASS ^(NAME ID) ^(PUBLIC_STATIC_VOID_MAIN statement))
         MainClassNode(Queue<Character> in) {
             if(!validStart(in)) {
                 parseError();
@@ -172,7 +178,8 @@ public class ASTBuilder {
                 return;
             }
             if(!validStart(in)) {
-                isNull = true;
+                // Normally valid endings are not EOF here it's ok
+                isNull = (!validEnd(in)) && in.isEmpty();
                 return;
             }
             String tok = getTok(in);
@@ -183,14 +190,43 @@ public class ASTBuilder {
                     return;
                 }
                 if(!validStart(in)) {
-                    isNull = true;
                     return;
                 }
                 tok = getTok(in);
             }
             if("VARDECLS".equals(tok)) {
                 varDecls = new LinkedList<VarDeclNode>();
-
+                VarDeclNode vdn;
+                while(!(vdn = new VarDeclNode(in)).isNull) {
+                    varDecls.add(vdn);
+                }
+                if(!validEnd(in)) {
+                    isNull = true;
+                    return;
+                }
+                if(!validStart(in)) {
+                    return;
+                }
+                tok = getTok(in);
+            }
+            if("METHODDECLS".equals(tok)) {
+                methodDecls = new LinkedList<MethodDeclNode>();
+                MethodDeclNode mdn;
+                while(!(mdn = new MethodDeclNode(in)).isNull) {
+                    methodDecls.add(mdn);
+                }
+                if(!validEnd(in)) {
+                    isNull = true;
+                    return;
+                }
+                if(!validStart(in)) {
+                    return;
+                }
+                tok = getTok(in);
+            }
+            if(!validEnd(in)) {
+                isNull = true;
+                return;
             }
         }
 		String toStringTree() {
@@ -223,6 +259,10 @@ public class ASTBuilder {
 	}
 	public static class VarDeclNode extends ASTNode {
 		String type, ident;
+        boolean isNull;
+        VarDeclNode(Queue<Character> in) {
+
+        }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(VarDeclNode (NAME ");
@@ -240,6 +280,9 @@ public class ASTBuilder {
 		List<VarDeclNode> varDecls, argList;
 		List<StatementNode> statements;
 		ExpressionNode returnExp;
+        MethodDeclNode(Queue<Character> in) {
+
+        }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(MethodDeclNode (NAME ");
@@ -517,9 +560,11 @@ public class ASTBuilder {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(ArrayAccessNode (ARRAY");
 			sb.append(ident);
-			sb.append(" ) (INDEX ");
-			sb.append(index);
-			sb.append(" ) )");
+			sb.append(" ) ");
+			if(indices != null)
+                for(Integer i : indices)
+                    {sb.append("(INDEX ");sb.append(i);sb.append(") ");}
+			sb.append(")");
 			return sb.toString();
 		}
 	}
