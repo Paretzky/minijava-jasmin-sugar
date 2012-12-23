@@ -74,7 +74,7 @@ public class ASTBuilder {
     public static class GoalNode extends ASTNode {
         MainClassNode mainClass;
         List<AdditionalClassNode> additionalClasses;
-
+        //^(GOAL mainclass ^(ADDITIONAL_CLASSES classdecls*))
         GoalNode(Queue<Character> in) {
             if (!validStart(in)) {
                 parseError();
