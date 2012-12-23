@@ -260,8 +260,22 @@ public class ASTBuilder {
 	public static class VarDeclNode extends ASTNode {
 		String type, ident;
         boolean isNull;
+        //^(VAR_DECL type ID)
         VarDeclNode(Queue<Character> in) {
-
+            if(!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if(!"VAR_DECL".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            type = getTok(in);
+            ident = getTok(in);
+            if(!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
