@@ -142,7 +142,7 @@ public class ASTBuilder {
 			return sb.toString();
 		}
 	}
-	public static class StatementNode extends ASTNode { }
+	public abstract static class StatementNode extends ASTNode { }
 	public static class AssignmentStatementNode extends StatementNode {
 		ReferenceAccessNode lhs;
 		ExpressionNode rhs;
@@ -251,14 +251,80 @@ public class ASTBuilder {
 			return sb.toString();
 		}
 	}	
-	public static class ExpressionNode extends ASTNode {}
+	public abstract static class ExpressionNode extends ASTNode {}
+	public static class CallExpNode extends ExpressionNode {
+		Expression lhs,rhs;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(CallExpNode (LHS");
+			sb.append(lhs.toStringTree());
+			sb.append(" ) (RHS ");
+			sb.append(rhs.toStringTree());
+			sb.append(" ) )");
+			return sb.toString();
+		}
+	}
+	public static class PeriodExpNode extends ASTNode {
+		String name;
+		List<String> params;
+		List<ExpressionNode> rhss;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(PeriodExpNode (NAME");
+			sb.append(name);
+			sb.append(") ");
+			if(params != null && params.length > 0) {
+				sb.append("(PARAM_LIST ");
+				for(String s : params) {
+					sb.append(s);
+				}
+				sb.append(" )");
+			}
+			if(params != null && params.length > 0) {
+				sb.append("(RHS ");
+				for(ExpressionNode n : rhss) {
+					sb.append(n.toStringTree());
+				}
+				sb.append(" )");
+			}
+			sb.append(" )");
+			return sb.toString();
+		}
+	}
+	public static class ArrayAccessNode extends ExpressionNode {
+		String ident;
+		int index;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(ArrayAccessNode (ARRAY");
+			sb.append(ident);
+			sb.append(" ) (INDEX ");
+			sb.append(index);
+			sb.append(" ) )");
+			return sb.toString();
+		}
+	}
 	public static class NewExpNode extends ASTNode {
 		String ident;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(NewExpNode ");
+			sb.append(ident);
+			sb.append(" )");
+			return sb.toString();
+		}
 	}
-	public static class NewIntArrExpNode extends NewExpNode {
-
+	public static class NewIntArrExpNode extends ASTNode {
+		int length;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(NewIntArrExpNode (LENGTH ");
+			sb.append(length);
+			sb.append(" ) )");
+			return sb.toString();
+		}
 	}
-	public static class PrimeExpNode extends ASTNode {
+	public abstract static class PrimeExpNode extends ASTNode {
 		
 	}
 	public static class LiteralIntNode extends PrimeExpNode {
@@ -267,6 +333,9 @@ public class ASTBuilder {
 			super();
 			this.value=value;
 		}
+		String toStringTree() {
+			return Integer.toString(value);
+		}
 	}
 	public static class LiteralBoolNode extends PrimeExpNode {
 		boolean value;
@@ -274,11 +343,17 @@ public class ASTBuilder {
 			super();
 			this.value=value;
 		}
+		String toStringTree() {
+			return Boolean.toString(value);
+		}
 	}
 	public static class ReferenceAccessNode extends PrimeExpNode {
 		String ident;
 		ReferenceAccessNode(String s) {
 			this.ident=s;
+		}
+		String toStringTree() {
+			return ident;
 		}
 	}
 }
