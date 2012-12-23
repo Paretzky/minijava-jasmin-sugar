@@ -35,7 +35,7 @@ public class ASTBuilder {
 		List<AdditionalClassNode> additionalClasses;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("(GOAL ");
+			sb.append("(GoalNode ");
 			sb.append(mainClass.toStringTree());
 			sb.append(" ");
 			sb.append(additionalClasses.toStringTree());
@@ -48,8 +48,8 @@ public class ASTBuilder {
 		StatementNode main;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("(MAIN_CLASS (NAME ");
-			sb.append(main);
+			sb.append("(MainClassNode (NAME ");
+			sb.append(name);
 			sb.append(") (PUBLIC_STATIC_VOID_MAIN ");
 			sb.append(main.toStringTree());
 			sb.append(" )");
@@ -57,32 +57,148 @@ public class ASTBuilder {
 		}
 	}
 	public static class AdditionalClassNode extends ASTNode {
+		//^(ADDITIONAL_CLASS ^(NAME $n) ^(EXTENDS $e)? ^(VARDECLS vardecl*) ^(METHODDECLS methoddecl*));
 		String name, extendsIdent;
 		List<VarDeclNode> varDecls;
 		List<MethodDeclNode> methodDecls;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(AdditionalClassNode (NAME ");
+			sb.append(name);
+			sb.append(") ");
+			if(extendsIdent != null) {
+				sb.append("(EXTENDS ");
+				sb.append(extendsIdent);
+				sb.append(" )");
+			}
+			if(varDecls != null && varDecls.length > 0) {
+				sb.append("(VARDECLS ");
+				for(VarDeclNode n : varDecls) {
+					sb.append(n.toStringTree());
+				}
+				sb.append(" )");
+			}
+			if(methodDecls != null && methodDecls.length > 0) {
+				sb.append("(METHODDECLS ");
+				for(MethodDeclNode n : methodDecls) {
+					sb.append(n.toStringTree());
+				}
+				sb.append(" )");
+			}
+			sb.append(" )");
+			return sb.toString();
+		}
 	}
 	public static class VarDeclNode extends ASTNode {
 		String type, ident;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(VarDeclNode (NAME ");
+			sb.append(ident);
+			sb.append(") (TYPE");
+			sb.append(type);
+			sb.append(" )");
+			return sb.toString();
+		}
 	}
 	public static class MethodDeclNode extends ASTNode {
+		// 		^(METHOD ^(NAME ID) ^(RETURN_TYPE type)  ^(METHOD_ARG_LIST methodarglist)? ^(VARDECLS vardecl*) ^(STATEMENTS statement*) ^(RETURN expression));
+	
 		String name, returnType;
-		List<VarDeclNode> varDecls;
+		List<VarDeclNode> varDecls, argList;
 		List<Statement> statements;
+		Expression returnExp;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(MethodDeclNode (NAME ");
+			sb.append(name);
+			sb.append(") (RETURN_TYPE ");
+			sb.append(returnType);
+			sb.append(") ");
+			if(argList != null && argList.length > 0) {
+				sb.append("(METHOD_ARG_LIST ");
+				for(VarDeclNode n : argList) {
+					sb.append(n.toStringTree());
+				}
+				sb.append(" )");
+			}
+			if(varDecls != null && varDecls.length > 0) {
+				sb.append("(VARDECLS ");
+				for(VarDeclNode n : varDecls) {
+					sb.append(n.toStringTree());
+				}
+				sb.append(" )");
+			}
+			if(statements != null && statements.length > 0) {
+				sb.append("(STATEMENTS ");
+				for(MethodDeclNode n : methodDecls) {
+					sb.append(n.toStringTree());
+				}
+				sb.append(" )");
+			}
+			sb.append("(RETURN ");
+			sb.append(returnExp.toStringTree());
+			sb.append(") )");
+			return sb.toString();
+		}
 	}
 	public static class StatementNode extends ASTNode { }
 	public static class AssignmentStatementNode extends StatementNode {
 		ReferenceAccessNode lhs;
 		ExpressionNode rhs;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(AssignmentStatementNode (LHS ");
+			sb.append(lhs.toStringTree());
+			sb.append(") (RHS");
+			sb.append(rhs.toStringTree());
+			sb.append(" )");
+			return sb.toString();
+		}
 	}
 	public static class ArrayAssignmentStatementNode extends AssignmentStatementNode {
 		int index;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(AssignmentStatementNode (LHS ");
+			sb.append(lhs.toStringTree());
+			sb.append(") (INDEX ");
+			sb.append(index);
+			sb.append(") (RHS ");
+			sb.append(rhs.toStringTree());
+			sb.append(" )");
+			return sb.toString();
+		}
 	}
 	public static class BlockNode extends StatementNode {
 		List<StatementNode> statements;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(BlockNode ");
+			if(statements != null && statements.length > 0) {
+				for(StatementNode n : statements) {
+					sb.append(n.toStringTree());
+				}
+			}
+			sb.append(" )");
+			return sb.toString();
+		}
 	}
 	public static class IfNode extends StatementNode {
 		Expression condition;
 		Statement onTrue, onFalse;
+		// ^(IF_STATEMENT ^(CONDITION $e) ^(IF $s1) ^(ELSE $s2))
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(IfNode (CONDITION ");
+			sb.append(condition.toStringTree());
+			sb.append(" ) (IF ");
+			sb.append(onTrue.toStringTree());
+			sb.append(" ) (ELSE ");
+			sb.append(onFalse.toStringTree());
+			sb.append(" )");
+			return sb.toString();
+		}
 	}
 	public static class WhileNode extends StatementNode {
 		Expression condition;
