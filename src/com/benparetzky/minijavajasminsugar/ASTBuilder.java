@@ -1,12 +1,5 @@
 package com.benparetzky.minijavajasminsugar;
 
-import org.antlr.stringtemplate.*;
-import org.antlr.runtime.*;
-import org.antlr.runtime.tree.*;
-import org.antlr.runtime.Token;
-import org.antlr.*;
-import antlr.*;
-
 import java.util.*;
 
 public class ASTBuilder {
