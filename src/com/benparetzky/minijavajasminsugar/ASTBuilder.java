@@ -3,21 +3,7 @@ package com.benparetzky.minijavajasminsugar;
 import java.util.*;
 
 public class ASTBuilder {
-    /*
-        static int verifyNewNodeStart(String firstToken, char [] input, int start) {
-            char [] tok = firstToken.toCharArray();
-            int leng = index.length-1,lastI = -1;
-            if(input[start] != '(') {
-                return -1;
-            }
-            for(int i = 1; i < tok.length && i < leng;i++) {
-                if(tok[i]!=input[start+i])
-                    return -1;
-                lastI = i;
-            }
-            return start+lastI;
-        }
-    */
+
     public static void main(String [] args) {
         Queue<Character> q = new LinkedList<Character>();
         StringBuilder sb = new StringBuilder();
