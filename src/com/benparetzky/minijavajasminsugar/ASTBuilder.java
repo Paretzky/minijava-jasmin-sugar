@@ -651,7 +651,49 @@ public class ASTBuilder {
 
         // ^(IF_STATEMENT ^(CONDITION $e) ^(IF $s1) ^(ELSE $s2))
         IfNode(Queue<Character> in) {
-
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"CONDITION".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            condition = ExpressionNode.constructExpression(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"IF".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            onTrue = StatementNode.constructStatement(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"ELSE".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            onFalse = StatementNode.constructStatement(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
 
         String toStringTree() {
