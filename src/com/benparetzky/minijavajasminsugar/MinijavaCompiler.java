@@ -17,9 +17,12 @@ public class MinijavaCompiler {
 		minijavaParser parser = new minijavaParser(tokens);
 		try {
 			minijavaParser.goal_return r = parser.goal();
-			buildScopes(r.tree);
+			System.out.println(r.tree.toStringTree());
+			//System.out.println(r.tree.toStringTree());
+			//System.out.println(r.tree.mainClass.tree.toStringTree());
+			/*buildScopes(r.tree);
 			System.out.println(scopes);
-			checkScopes(r.tree);
+			checkScopes(r.tree);*/
 		} catch (org.antlr.runtime.RecognitionException e)  {
 			e.printStackTrace();
 		}
@@ -33,6 +36,20 @@ public class MinijavaCompiler {
 			e.printStackTrace();
 		}
 		*/
+	}
+
+	static BaseTree getChildByName(BaseTree parent, String childName) {
+		List l = parent.getChildren();
+		if(l == null) {
+			return null;
+		}
+		for(Object o : l) {
+			BaseTree t = (BaseTree) o;
+			if(t.toString().equals(childName)) {
+				return t;
+			}
+		}
+		return null;
 	}
 
 	static void buildScopes(BaseTree ret) {
