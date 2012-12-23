@@ -291,6 +291,16 @@ public class ASTBuilder {
 			return sb.toString();
 		}
 	}
+	public static class BangExpNode extends ExpressionNode {
+		Expression exp;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(BOOLEAN_INVERT ");
+			sb.append(exp.toStringTree());
+			sb.append(" )");
+			return sb.toString();
+		}
+	}
 	public static class ArrayAccessNode extends ExpressionNode {
 		String ident;
 		int index;
