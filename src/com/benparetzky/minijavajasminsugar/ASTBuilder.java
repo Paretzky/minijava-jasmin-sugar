@@ -29,11 +29,21 @@ public class ASTBuilder {
             return in.poll() != null;
         return false;
     }
+    static boolean validEnd(Queue<Character> in) {
+        Character c;
+        while((c = in.peek()) == ' ') {
+            in.poll();
+        }
+        return in.poll().charValue() == ')';
+    }
     static String getTok(Queue<Character> in) {
         StringBuilder sb = new StringBuilder();
         Character c;
         while((c = in.peek()) != '(' && c != ' ' && c != ')') {
             sb.append(in.poll());
+        }
+        while((c = in.peek()) == ' ') {
+            in.poll();
         }
         return sb.toString();
     }
@@ -56,7 +66,7 @@ public class ASTBuilder {
             if(!validStart(in)) {
                 parseError();
             }
-            if(getTok(in) != "GOAL") {
+            if(!"GOAL".equals(getTok(in))) {
                 parseError();
             }
             mainClass = new MainClassNode(in);
@@ -67,6 +77,9 @@ public class ASTBuilder {
                 while((n =  new AdditionalClassNode(in)).isNull) {
                     additionalClasses.add(n);
                 }
+            }
+            if(!(validEnd(in) && in.size() == 0)) {
+                parseError();
             }
         }
 		String toStringTree() {
@@ -90,7 +103,35 @@ public class ASTBuilder {
 		String name;
 		StatementNode main;
         MainClassNode(Queue<Character> in) {
-
+            if(!validStart(in)) {
+                parseError();
+            }
+            if(! "MAIN_CLASS".equals(getTok(in))) {
+                parseError();
+            }
+            if(!validStart(in)) {
+                parseError();
+            }
+            if(! "NAME".equals(getTok(in))) {
+                parseError();
+            }
+            name = getTok(in);
+            if(!validEnd(in)) {
+                parseError();
+            }
+            if(!validStart(in)) {
+                parseError();
+            }
+            if(! "PUBLIC_STATIC_VOID_MAIN".equals(getTok(in))) {
+                parseError();
+            }
+            main = StatementNode.constructStatement(in);
+            if(!validEnd(in)) {
+                parseError();
+            }
+            if(!validEnd(in)) {
+                parseError();
+            }
         }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
@@ -109,8 +150,49 @@ public class ASTBuilder {
 		List<VarDeclNode> varDecls;
 		List<MethodDeclNode> methodDecls;
         AdditionalClassNode(Queue<Character> in) {
+            if(!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if(!"ADDITIONAL_CLASS".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            if(!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if(!"NAME".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            name = getTok(in);
+            if(!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if(!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            String tok = getTok(in);
+            if("EXTENDS".equals(tok)) {
+                extendsIdent = getTok(in);
+                if(!validEnd(in)) {
+                    isNull = true;
+                    return;
+                }
+                if(!validStart(in)) {
+                    isNull = true;
+                    return;
+                }
+                tok = getTok(in);
+            }
+            if("VARDECLS".equals(tok)) {
+                varDecls = new LinkedList<VarDeclNode>();
 
-        })
+            }
+        }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(AdditionalClassNode (NAME ");
@@ -192,7 +274,11 @@ public class ASTBuilder {
 			return sb.toString();
 		}
 	}
-	public abstract static class StatementNode extends ASTNode { }
+	public abstract static class StatementNode extends ASTNode {
+        static StatementNode constructStatement(Queue<Character> in) {
+            return null;
+        }
+    }
 	public static class AssignmentStatementNode extends StatementNode {
 		ReferenceAccessNode lhs;
 		ExpressionNode rhs;
@@ -407,7 +493,26 @@ public class ASTBuilder {
 	}
 	public static class ArrayAccessNode extends ExpressionNode {
 		String ident;
-		int index;
+		List<Integer> indices;
+        // ^(ARRAY_ACCESS ^(ARRAY newexp) ^(INDEX $rhs)*)
+        ArrayAccessNode(Queue<Character> in) {
+            if(!validStart(in)) {
+                parseError();
+            }
+            if(!"ARRAY_ACCESS".equals(getTok(in))) {
+                parseError();
+            }
+            if(!validStart(in)) {
+                parseError();
+            }
+            if(!"ARRAY".equals(getTok(in))) {
+                parseError();
+            }
+            ident = getTok(in);
+            if(!validEnd(in)) {
+                parseError();
+            }
+        }
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(ArrayAccessNode (ARRAY");
