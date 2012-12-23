@@ -623,7 +623,7 @@ public class ASTBuilder {
         BlockNode(Queue<Character> in) {
             StatementNode n;
             statements = new LinkedList<StatementNode>();
-            while((n = StatementNode.constructStatement(in)) != null && !n.isNull) {
+            while ((n = StatementNode.constructStatement(in)) != null && !n.isNull) {
                 statements.add(n);
             }
             if (!validEnd(in)) {
@@ -761,8 +761,13 @@ public class ASTBuilder {
     public static class SoutNode extends StatementNode {
         ExpressionNode sout;
 
+        //^(SOUT expression)
         SoutNode(Queue<Character> in) {
-
+            sout = ExpressionNode.constructExpression(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
 
         String toStringTree() {
