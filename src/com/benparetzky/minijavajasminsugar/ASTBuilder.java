@@ -838,8 +838,39 @@ public class ASTBuilder {
 
         //^(FOR_EACH_STATEMENT ^(IN ^(VAR_DECL type $a) $b) ^(STATEMENT statement))
         ForEachNode(Queue<Character> in) {
-
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"IN".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            local = new VarDeclNode(in);
+            arrayIdent = getTok(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"STATEMENT".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            statement = StatementNode.constructStatement(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
+
 
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
