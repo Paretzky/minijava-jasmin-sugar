@@ -203,15 +203,53 @@ public class ASTBuilder {
 	public static class WhileNode extends StatementNode {
 		Expression condition;
 		Statement statement;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(WhileNode (CONDITION ");
+			sb.append(condition.toStringTree());
+			sb.append(" ) (STATEMENT ");
+			sb.append(statement.toStringTree());
+			sb.append(" ) )");
+			return sb.toString();
+		}
 	}
 	public static class SoutNode extends StatementNode {
 		Expression sout;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(SoutNode 
+			sb.append(sout.toStringTree());
+			sb.append(" )");
+			return sb.toString();
+		}
 	}
-	public static class DoWhileNode extends WhileNode {}
+	public static class DoWhileNode extends WhileNode {
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(WhileNode (STATEMENT  ");
+			sb.append(statement.toStringTree());
+			sb.append(" ) (CONDITION ");
+			sb.append(condition.toStringTree());
+			sb.append(" ) )");
+			return sb.toString();
+		}	
+	}
 	public static class ForEachNode extends StatementNode {
+		//^(FOR_EACH_STATEMENT ^(IN ^(VAR_DECL type $a) $b) ^(STATEMENT statement))
 		VarDeclNode local;
-		ReferenceAccessNode arrayIdent;
+		String arrayIdent;
 		Statement statement;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(ForEachNode (IN  ");
+			sb.append(local.toStringTree());
+			sb.append(" ");
+			sb.append(arrayIndent);
+			sb.append(") (STATEMENT ");
+			sb.append(statement.toStringTree());
+			sb.append(" ) )");
+			return sb.toString();
+		}
 	}	
 	public static class ExpressionNode extends ASTNode {}
 	public static class NewExpNode extends ASTNode {
