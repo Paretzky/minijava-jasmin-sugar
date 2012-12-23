@@ -18,6 +18,19 @@ public class ASTBuilder {
             return start+lastI;
         }
     */
+    public static void main(String [] args) {
+        Queue<Character> q = new LinkedList<Character>();
+        StringBuilder sb = new StringBuilder();
+        Scanner in = new Scanner(System.in);
+        while(in.hasNext()) {
+            sb.append(in.next());
+        }
+        for(char c : sb.toString().toCharArray())
+            q.add(c);
+        GoalNode n = new GoalNode(q);
+        System.out.println(n.toStringTree());
+    }
+
     static boolean validStart(Queue<Character> in) {
         if (in.peek() == '(')
             return in.poll() != null;
