@@ -468,31 +468,31 @@ public class ASTBuilder {
                 return nullNode;
             }
             tok = getTok(in);
-            if(tok == null) {
+            if (tok == null) {
                 return nullNode;
             }
-            if("ASSIGNMENT_STATEMENT".equals(tok)) {
+            if ("ASSIGNMENT_STATEMENT".equals(tok)) {
                 return new AssignmentStatementNode(in);
             }
-            if("BLOCK".equals(tok)) {
+            if ("BLOCK".equals(tok)) {
                 return new BlockNode(in);
             }
-            if("IF_STATEMENT".equals(tok)) {
+            if ("IF_STATEMENT".equals(tok)) {
                 return new IfNode(in);
             }
-            if("WHILE_STATEMENT".equals(tok)) {
+            if ("WHILE_STATEMENT".equals(tok)) {
                 return new WhileNode(in);
             }
-            if("SOUT".equals(tok)) {
+            if ("SOUT".equals(tok)) {
                 return new SoutNode(in);
             }
-            if("DO_WHILE_STATEMENT".equals(tok)) {
+            if ("DO_WHILE_STATEMENT".equals(tok)) {
                 return new DoWhileNode(in);
             }
-            if("FOR_EACH_STATEMENT".equals(tok)) {
+            if ("FOR_EACH_STATEMENT".equals(tok)) {
                 return new ForEachNode(in);
             }
-            if("ARRAY_ASSIGNMENT_STATEMENT".equals(tok)) {
+            if ("ARRAY_ASSIGNMENT_STATEMENT".equals(tok)) {
                 return new ArrayAssignmentStatementNode(in);
             }
             return nullNode;
@@ -502,10 +502,40 @@ public class ASTBuilder {
     public static class AssignmentStatementNode extends StatementNode {
         ReferenceAccessNode lhs;
         ExpressionNode rhs;
-        int index;
 
+        //^(ASSIGNMENT_STATEMENT ^(LHS ID) ^(RHS expression))
         AssignmentStatementNode(Queue<Character> in) {
-
+            //Starting at LHS
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"LHS".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            lhs = new ReferenceAccessNode(getTok(in));
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"RHS".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            rhs = ExpressionNode.constructExpression(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
 
         String toStringTree() {
@@ -519,11 +549,60 @@ public class ASTBuilder {
         }
     }
 
-    public static class ArrayAssignmentStatementNode extends AssignmentStatementNode {
+    public static class ArrayAssignmentStatementNode extends StatementNode {
+        ArrayAccessNode lhs;
+        ExpressionNode rhs;
+        int index;
 
+
+        // ^(ARRAY_ASSIGNMENT_STATEMENT ^(LHS ^(ARRAY $a) ^(INDEX $e1)) ^(RHS $e2))
         ArrayAssignmentStatementNode(Queue<Character> in) {
-                super(in);
+            //Starting at LHS
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"LHS".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            lhs = new ArrayAccessNode(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"index".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            index = Integer.parseInt(getTok(in));
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"RHS".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            rhs = ExpressionNode.constructExpression(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
+
         String toStringTree() {
             StringBuilder sb = new StringBuilder();
             sb.append("(AssignmentStatementNode (LHS ");
