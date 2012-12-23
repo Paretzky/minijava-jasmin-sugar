@@ -25,7 +25,7 @@ public class ASTBuilder {
 	}
 */
 	public GoalNode build(char [] input) {
-		
+		      return null;
 	}
 	static abstract class ASTNode { 
 		abstract String toStringTree();
@@ -38,7 +38,14 @@ public class ASTBuilder {
 			sb.append("(GoalNode ");
 			sb.append(mainClass.toStringTree());
 			sb.append(" ");
-			sb.append(additionalClasses.toStringTree());
+            if(additionalClasses != null && additionalClasses.size() > 0) {
+                sb.append("(ADDITIONAL_CLASSES ");
+                for(AdditionalClassNode n : additionalClasses) {
+                    sb.append(n.toStringTree());
+                }
+                sb.append(" )");
+            }
+			//sb.append(additionalClasses.toStringTree());
 			sb.append(" )");
 			return sb.toString();
 		}
@@ -71,14 +78,14 @@ public class ASTBuilder {
 				sb.append(extendsIdent);
 				sb.append(" )");
 			}
-			if(varDecls != null && varDecls.length > 0) {
+			if(varDecls != null && varDecls.size() > 0) {
 				sb.append("(VARDECLS ");
 				for(VarDeclNode n : varDecls) {
 					sb.append(n.toStringTree());
 				}
 				sb.append(" )");
 			}
-			if(methodDecls != null && methodDecls.length > 0) {
+			if(methodDecls != null && methodDecls.size() > 0) {
 				sb.append("(METHODDECLS ");
 				for(MethodDeclNode n : methodDecls) {
 					sb.append(n.toStringTree());
@@ -106,8 +113,8 @@ public class ASTBuilder {
 	
 		String name, returnType;
 		List<VarDeclNode> varDecls, argList;
-		List<Statement> statements;
-		Expression returnExp;
+		List<StatementNode> statements;
+		ExpressionNode returnExp;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(MethodDeclNode (NAME ");
@@ -115,23 +122,23 @@ public class ASTBuilder {
 			sb.append(") (RETURN_TYPE ");
 			sb.append(returnType);
 			sb.append(") ");
-			if(argList != null && argList.length > 0) {
+			if(argList != null && argList.size() > 0) {
 				sb.append("(METHOD_ARG_LIST ");
 				for(VarDeclNode n : argList) {
 					sb.append(n.toStringTree());
 				}
 				sb.append(" )");
 			}
-			if(varDecls != null && varDecls.length > 0) {
+			if(varDecls != null && varDecls.size() > 0) {
 				sb.append("(VARDECLS ");
 				for(VarDeclNode n : varDecls) {
 					sb.append(n.toStringTree());
 				}
 				sb.append(" )");
 			}
-			if(statements != null && statements.length > 0) {
+			if(statements != null && statements.size() > 0) {
 				sb.append("(STATEMENTS ");
-				for(MethodDeclNode n : methodDecls) {
+				for(StatementNode n : statements) {
 					sb.append(n.toStringTree());
 				}
 				sb.append(" )");
@@ -175,7 +182,7 @@ public class ASTBuilder {
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(BlockNode ");
-			if(statements != null && statements.length > 0) {
+			if(statements != null && statements.size() > 0) {
 				for(StatementNode n : statements) {
 					sb.append(n.toStringTree());
 				}
@@ -185,8 +192,8 @@ public class ASTBuilder {
 		}
 	}
 	public static class IfNode extends StatementNode {
-		Expression condition;
-		Statement onTrue, onFalse;
+		ExpressionNode condition;
+		StatementNode onTrue, onFalse;
 		// ^(IF_STATEMENT ^(CONDITION $e) ^(IF $s1) ^(ELSE $s2))
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
@@ -201,8 +208,8 @@ public class ASTBuilder {
 		}
 	}
 	public static class WhileNode extends StatementNode {
-		Expression condition;
-		Statement statement;
+		ExpressionNode condition;
+		StatementNode statement;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(WhileNode (CONDITION ");
@@ -214,10 +221,10 @@ public class ASTBuilder {
 		}
 	}
 	public static class SoutNode extends StatementNode {
-		Expression sout;
+		ExpressionNode sout;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("(SoutNode 
+			sb.append("(SoutNode ");
 			sb.append(sout.toStringTree());
 			sb.append(" )");
 			return sb.toString();
@@ -238,13 +245,13 @@ public class ASTBuilder {
 		//^(FOR_EACH_STATEMENT ^(IN ^(VAR_DECL type $a) $b) ^(STATEMENT statement))
 		VarDeclNode local;
 		String arrayIdent;
-		Statement statement;
+		StatementNode statement;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(ForEachNode (IN  ");
 			sb.append(local.toStringTree());
 			sb.append(" ");
-			sb.append(arrayIndent);
+			sb.append(arrayIdent);
 			sb.append(") (STATEMENT ");
 			sb.append(statement.toStringTree());
 			sb.append(" ) )");
@@ -253,7 +260,7 @@ public class ASTBuilder {
 	}	
 	public abstract static class ExpressionNode extends ASTNode {}
 	public static class CallExpNode extends ExpressionNode {
-		Expression lhs,rhs;
+		ExpressionNode lhs,rhs;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(CallExpNode (LHS");
@@ -273,14 +280,14 @@ public class ASTBuilder {
 			sb.append("(PeriodExpNode (NAME");
 			sb.append(name);
 			sb.append(") ");
-			if(params != null && params.length > 0) {
+			if(params != null && params.size() > 0) {
 				sb.append("(PARAM_LIST ");
 				for(String s : params) {
 					sb.append(s);
 				}
 				sb.append(" )");
 			}
-			if(params != null && params.length > 0) {
+			if(params != null && params.size() > 0) {
 				sb.append("(RHS ");
 				for(ExpressionNode n : rhss) {
 					sb.append(n.toStringTree());
@@ -292,7 +299,7 @@ public class ASTBuilder {
 		}
 	}
 	public static class BangExpNode extends ExpressionNode {
-		Expression exp;
+		ExpressionNode exp;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(BangExpNode ");
@@ -306,7 +313,7 @@ public class ASTBuilder {
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(MultiplyExpNode ");
-			if(exps != null && exps.length > 0) {
+			if(exps != null && exps.size() > 0) {
 				for(ExpressionNode n : exps) {
 					sb.append(n.toStringTree());
 				}
@@ -322,7 +329,7 @@ public class ASTBuilder {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(PlusMinusExpNode ");
 			sb.append(plus?"+ ":"- ");
-			if(exps != null && exps.length > 0) {
+			if(exps != null && exps.size() > 0) {
 				for(ExpressionNode n : exps) {
 					sb.append(n.toStringTree());
 				}
@@ -332,7 +339,7 @@ public class ASTBuilder {
 		}
 	}
 	public static class LessThanExpNode extends ExpressionNode {
-		Expression lhs,rhs;
+		ExpressionNode lhs,rhs;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(LessThanExpNode (LHS ");
@@ -344,7 +351,7 @@ public class ASTBuilder {
 		}
 	}
 	public static class BoolAndExpNode extends ExpressionNode {
-		Expression lhs,rhs;
+		ExpressionNode lhs,rhs;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(BoolAndExpNode ");
@@ -403,7 +410,7 @@ public class ASTBuilder {
 	}
 	public static class LiteralBoolNode extends PrimeExpNode {
 		boolean value;
-		LiteralIntNode(boolean value) {
+        LiteralBoolNode(boolean value) {
 			super();
 			this.value=value;
 		}
