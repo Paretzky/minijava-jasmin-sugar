@@ -295,8 +295,62 @@ public class ASTBuilder {
 		Expression exp;
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("(BOOLEAN_INVERT ");
+			sb.append("(BangExpNode ");
 			sb.append(exp.toStringTree());
+			sb.append(" )");
+			return sb.toString();
+		}
+	}
+	public static class MultiplyExpNode extends ExpressionNode {
+		List<ExpressionNode> exps;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(MultiplyExpNode ");
+			if(exps != null && exps.length > 0) {
+				for(ExpressionNode n : exps) {
+					sb.append(n.toStringTree());
+				}
+			}
+			sb.append(" )");
+			return sb.toString();
+		}
+	}
+	public static class PlusMinusExpNode extends ExpressionNode {
+		List<ExpressionNode> exps;
+		boolean plus;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(PlusMinusExpNode ");
+			sb.append(plus?"+ ":"- ");
+			if(exps != null && exps.length > 0) {
+				for(ExpressionNode n : exps) {
+					sb.append(n.toStringTree());
+				}
+			}
+			sb.append(" )");
+			return sb.toString();
+		}
+	}
+	public static class LessThanExpNode extends ExpressionNode {
+		Expression lhs,rhs;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(LessThanExpNode (LHS ");
+			sb.append(lhs.toStringTree());
+			sb.append(" ) (RHS ");
+			sb.append(rhs.toStringTree());
+			sb.append(" ) )");
+			return sb.toString();
+		}
+	}
+	public static class BoolAndExpNode extends ExpressionNode {
+		Expression lhs,rhs;
+		String toStringTree() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("(BoolAndExpNode ");
+			sb.append(lhs.toStringTree());
+			sb.append(" ");
+			sb.append(rhs.toStringTree());
 			sb.append(" )");
 			return sb.toString();
 		}
