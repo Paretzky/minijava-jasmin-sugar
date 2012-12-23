@@ -74,6 +74,7 @@ public class ASTBuilder {
     public static class GoalNode extends ASTNode {
         MainClassNode mainClass;
         List<AdditionalClassNode> additionalClasses;
+
         //^(GOAL mainclass ^(ADDITIONAL_CLASSES classdecls*))
         GoalNode(Queue<Character> in) {
             if (!validStart(in)) {
@@ -163,12 +164,12 @@ public class ASTBuilder {
     }
 
     public static class AdditionalClassNode extends ASTNode {
-        //^(ADDITIONAL_CLASS ^(NAME $n) ^(EXTENDS $e)? ^(VARDECLS vardecl*) ^(METHODDECLS methoddecl*));
         boolean isNull;
         String name, extendsIdent;
         List<VarDeclNode> varDecls;
         List<MethodDeclNode> methodDecls;
 
+        //^(ADDITIONAL_CLASS ^(NAME $n) ^(EXTENDS $e)? ^(VARDECLS vardecl*) ^(METHODDECLS methoddecl*));
         AdditionalClassNode(Queue<Character> in) {
             if (!validStart(in)) {
                 isNull = true;
@@ -307,14 +308,14 @@ public class ASTBuilder {
     }
 
     public static class MethodDeclNode extends ASTNode {
-        // 		^(METHOD ^(NAME ID) ^(RETURN_TYPE type)  ^(METHOD_ARG_LIST methodarglist)? ^(VARDECLS vardecl*) ^(STATEMENTS statement*) ^(RETURN expression));
-
         String name, returnType;
         List<VarDeclNode> varDecls, argList;
         List<StatementNode> statements;
         ExpressionNode returnExp;
         boolean isNull;
 
+        // ^(METHOD ^(NAME ID) ^(RETURN_TYPE type)  ^(METHOD_ARG_LIST methodarglist)? ^(VARDECLS vardecl*)
+        //      ^(STATEMENTS statement*) ^(RETURN expression))
         MethodDeclNode(Queue<Character> in) {
             if (!validStart(in)) {
                 isNull = true;
