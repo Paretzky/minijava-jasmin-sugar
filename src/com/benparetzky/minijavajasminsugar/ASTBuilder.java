@@ -18,6 +18,11 @@ public class ASTBuilder {
     }
 
     static boolean validStart(Queue<Character> in) {
+        while ((!in.isEmpty()) && in.peek().charValue() == ' ') {
+            in.poll();
+        }
+        if (in.size() == 0)
+            return false;
         if (in.peek() == '(')
             return in.poll() != null;
         return false;
