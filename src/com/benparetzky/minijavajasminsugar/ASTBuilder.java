@@ -713,6 +713,10 @@ public class ASTBuilder {
         ExpressionNode condition;
         StatementNode statement;
 
+        protected WhileNode() {
+
+        }
+
         //^(WHILE_STATEMENT ^(CONDITION expression) ^(STATEMENT statement))
         WhileNode(Queue<Character> in) {
             if (!validStart(in)) {
@@ -781,8 +785,39 @@ public class ASTBuilder {
 
     public static class DoWhileNode extends WhileNode {
 
+        //^(DO_WHILE_STATEMENT ^(STATEMENT statement) ^(CONDITION expression))
         DoWhileNode(Queue<Character> in) {
-            super(in);
+            super();
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"STATEMENT".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            statement = StatementNode.constructStatement(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validStart(in)) {
+                isNull = true;
+                return;
+            }
+            if (!"CONDITION".equals(getTok(in))) {
+                isNull = true;
+                return;
+            }
+            condition = ExpressionNode.constructExpression(in);
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
+            if (!validEnd(in)) {
+                isNull = true;
+                return;
+            }
         }
 
         String toStringTree() {
