@@ -915,10 +915,10 @@ public class ASTBuilder {
 			if ("BOOL_AND".equals(tok)) {
 				return new BoolAndExpNode(in);
 			}
-			if ("PLUS".equals(tok)) {
+			if ("+".equals(tok)) {
 				return new PlusMinusExpNode(in, 1);
 			}
-			if ("MINUS".equals(tok)) {
+			if ("-".equals(tok)) {
 				return new PlusMinusExpNode(in, -1);
 			}
 			if ("BOOLEAN_INVERT".equals(tok)) {
