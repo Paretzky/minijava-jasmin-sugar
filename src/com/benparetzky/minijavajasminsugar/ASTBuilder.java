@@ -1062,7 +1062,12 @@ public class ASTBuilder {
 		ExpressionNode lhs, rhs;
 
 		LessThanExpNode(Queue<Character> in) {
-
+			lhs = ExpressionNode.constructExpression(in);
+			rhs = ExpressionNode.constructExpression(in);
+			if (!validEnd(in)) {
+				parseError();
+				return;
+			}
 		}
 
 		String toStringTree() {
