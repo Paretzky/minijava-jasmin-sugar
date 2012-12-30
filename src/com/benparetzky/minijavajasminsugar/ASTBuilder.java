@@ -907,8 +907,17 @@ public class ASTBuilder {
 	}
 
 	public abstract static class ExpressionNode extends ASTNode {
-		private static final ExpressionNode nullNode = null;
 		protected boolean isNull = false;
+		private static final ExpressionNode nullNode = new ExpressionNode() {
+
+			@Override
+			String toStringTree() {
+				return "(NULL ExpressionNode)";
+			}
+		};
+		static {
+			nullNode.isNull = true;
+		}
 
 		static ExpressionNode constructExpression(Queue<Character> in) {
 			String tok;
