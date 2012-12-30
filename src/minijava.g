@@ -77,6 +77,7 @@ tokens {
 	ARRAY_ACCESS;
 	BOOLEAN_INVERT;
 	REFERENCE;
+	NEWINTARRAY;
 }
 @lexer::header{
 package com.benparetzky.minijavajasminsugar;
