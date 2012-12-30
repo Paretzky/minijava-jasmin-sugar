@@ -900,6 +900,7 @@ public class ASTBuilder {
 	public abstract static class ExpressionNode extends ASTNode {
 		private static final ExpressionNode nullNode = null;
 		protected boolean isNull = false;
+
 		static ExpressionNode constructExpression(Queue<Character> in) {
 			String tok;
 			if (!validStart(in)) {
@@ -930,6 +931,9 @@ public class ASTBuilder {
 			if ("CALLEXP".equals(tok)) {
 				return new CallExpNode(in);
 			}
+			if ("CALL".equals(tok)) {
+				return new PeriodExpNode(in);
+			}
 			if ("ARRAY_ACCESS".equals(tok)) {
 				return new ArrayAccessNode(in);
 			}
@@ -949,12 +953,12 @@ public class ASTBuilder {
 				boolean b = Boolean.parseBoolean(tok);
 				return new LiteralBoolNode(b);
 			} catch (IllegalArgumentException e) {
-			    //Fall through is ok here, if it's not a bool try some more stuffs
+				//Fall through is ok here, if it's not a bool try some more stuffs
 			}
 			try {
 				int i = Integer.parseInt(tok);
 				return new LiteralIntNode(i);
-			}  catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {
 				//Fall through is ok here, if it's not a bool try some more stuffs
 			}
 			return nullNode;
@@ -1004,10 +1008,60 @@ public class ASTBuilder {
 		}
 	}
 
-	public static class PeriodExpNode extends ASTNode {
+	public static class PeriodExpNode extends ExpressionNode {
 		String name;
-		List<String> params;
-		List<ExpressionNode> rhss;
+		List<ExpressionNode> params, rhss;
+
+		// ^(CALL ^(NAME ID) ^(PARAMS_LIST $e1 $e2*)? (^(RHS $r))*);
+		PeriodExpNode(Queue<Character> in) {
+			if (!validStart(in)) {
+				parseError();
+				isNull = true;
+				return;
+			}
+			if (!"NAME".equals(getTok(in))) {
+				parseError();
+				return;
+			}
+			name = getTok(in);
+			if (!validEnd(in)) {
+				parseError();
+				return;
+			}
+			if (!validStart(in)) {
+				parseError();
+				isNull = true;
+				return;
+			}
+			String tok;
+			ExpressionNode e;
+			tok = getTok(in);
+			if ("PARAMS_LIST".equals(tok)) {
+				params = new LinkedList<ExpressionNode>();
+				while (!(e = ExpressionNode.constructExpression(in)).isNull) {
+					params.add(e);
+				}
+				if (!validEnd(in)) {
+					parseError();
+					return;
+				}
+				tok = getTok(in);
+			}
+			if ("RHS".equals(tok)) {
+				rhss = new LinkedList<ExpressionNode>();
+				while (!(e = ExpressionNode.constructExpression(in)).isNull) {
+					rhss.add(e);
+				}
+				if (!validEnd(in)) {
+					parseError();
+					return;
+				}
+			}
+			if (!validEnd(in)) {
+				parseError();
+				return;
+			}
+		}
 
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
@@ -1015,13 +1069,13 @@ public class ASTBuilder {
 			sb.append(name);
 			sb.append(") ");
 			if (params != null && params.size() > 0) {
-				sb.append("(PARAM_LIST ");
-				for (String s : params) {
-					sb.append(s);
+				sb.append("(RHS ");
+				for (ExpressionNode n : rhss) {
+					sb.append(n.toStringTree());
 				}
 				sb.append(" )");
 			}
-			if (params != null && params.size() > 0) {
+			if (rhss != null && rhss.size() > 0) {
 				sb.append("(RHS ");
 				for (ExpressionNode n : rhss) {
 					sb.append(n.toStringTree());
@@ -1038,7 +1092,7 @@ public class ASTBuilder {
 
 		BangExpNode(Queue<Character> in) {
 			exp = ExpressionNode.constructExpression(in);
-			if(!validEnd(in)) {
+			if (!validEnd(in)) {
 				parseError();
 				return;
 			}
@@ -1059,10 +1113,10 @@ public class ASTBuilder {
 		MultiplyExpNode(Queue<Character> in) {
 			ExpressionNode e;
 			exps = new LinkedList<ExpressionNode>();
-			while(!(e = ExpressionNode.constructExpression(in)).isNull) {
+			while (!(e = ExpressionNode.constructExpression(in)).isNull) {
 				exps.add(e);
 			}
-			if(!validEnd(in)) {
+			if (!validEnd(in)) {
 				parseError();
 				return;
 			}
@@ -1085,14 +1139,14 @@ public class ASTBuilder {
 		List<ExpressionNode> exps;
 		boolean plus;
 
-		PlusMinusExpNode(Queue<Character> in,int i) {
+		PlusMinusExpNode(Queue<Character> in, int i) {
 			plus = i > 0;
 			ExpressionNode e;
 			exps = new LinkedList<ExpressionNode>();
-			while(!(e = ExpressionNode.constructExpression(in)).isNull) {
+			while (!(e = ExpressionNode.constructExpression(in)).isNull) {
 				exps.add(e);
 			}
-			if(!validEnd(in)) {
+			if (!validEnd(in)) {
 				parseError();
 				return;
 			}
