@@ -9,15 +9,15 @@ test1.java output
 
 public class ASTBuilder {
 
-	public static void main(String [] args) {
+	public static void main(String[] args) {
 		Queue<Character> q = new LinkedList<Character>();
 		StringBuilder sb = new StringBuilder();
 		Scanner in = new Scanner(System.in);
-		while(in.hasNext()) {
+		while (in.hasNext()) {
 			sb.append(in.next());
 			sb.append(' ');
 		}
-		for(char c : sb.toString().toCharArray())
+		for (char c : sb.toString().toCharArray())
 			q.add(c);
 		GoalNode n = new GoalNode(q);
 		System.out.println(n.toStringTree());
@@ -138,7 +138,7 @@ public class ASTBuilder {
 				parseError();
 			}
 			name = getTok(in);
-		System.out.println("name: " + name);
+			System.out.println("name: " + name);
 			if (!validEnd(in)) {
 				parseError();
 			}
@@ -898,13 +898,71 @@ public class ASTBuilder {
 	}
 
 	public abstract static class ExpressionNode extends ASTNode {
+		private static final ExpressionNode nullNode = null;
 		static ExpressionNode constructExpression(Queue<Character> in) {
-			return null;
+			String tok;
+			if (!validStart(in)) {
+				return nullNode;
+			}
+			tok = getTok(in);
+			if (tok == null) {
+				return nullNode;
+			}
+			if ("LESS_THAN".equals(tok)) {
+				return new LessThanExpNode(in);
+			}
+			if ("BOOL_AND".equals(tok)) {
+				return new BoolAndExpNode(in);
+			}
+			if ("PLUS".equals(tok)) {
+				return new PlusMinusExpNode(in, 1);
+			}
+			if ("MINUS".equals(tok)) {
+				return new PlusMinusExpNode(in, -1);
+			}
+			if ("BOOLEAN_INVERT".equals(tok)) {
+				return new BangExpNode(in);
+			}
+			if ("CALLEXP".equals(tok)) {
+				return new CallExpNode(in);
+			}
+			if ("ARRAY_ACCESS".equals(tok)) {
+				return new ArrayAccessNode(in);
+			}
+			if ("NEW".equals(tok)) {
+				return new NewExpNode(in);
+			}
+			if ("NEWINTARRAY".equals(tok)) {
+				return new NewIntArrExpNode(in);
+			}
+			if ("REFERENCE".equals(tok)) {
+				return new ReferenceAccessNode(in);
+			}
+			if ("this".equalsIgnoreCase(tok)) {
+				return new ReferenceAccessNode("this");
+			}
+			try {
+				boolean b = Boolean.parseBoolean(tok);
+				return new LiteralBoolNode(b);
+			} catch (IllegalArgumentException e) {
+			    //Fall through is ok here, if it's not a bool try some more stuffs
+			}
+			try {
+				int i = Integer.parseInt(tok);
+				return new LiteralIntNode(i);
+			}  catch (IllegalArgumentException e) {
+				//Fall through is ok here, if it's not a bool try some more stuffs
+			}
+			return nullNode;
 		}
 	}
 
 	public static class CallExpNode extends ExpressionNode {
 		ExpressionNode lhs, rhs;
+
+		CallExpNode(Queue<Character> in) {
+
+		}
 
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
@@ -949,6 +1007,10 @@ public class ASTBuilder {
 	public static class BangExpNode extends ExpressionNode {
 		ExpressionNode exp;
 
+		BangExpNode(Queue<Character> in) {
+
+		}
+
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(BangExpNode ");
@@ -978,6 +1040,10 @@ public class ASTBuilder {
 		List<ExpressionNode> exps;
 		boolean plus;
 
+		PlusMinusExpNode(Queue<Character> in,int i) {
+			plus = i > 0;
+		}
+
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(PlusMinusExpNode ");
@@ -995,6 +1061,10 @@ public class ASTBuilder {
 	public static class LessThanExpNode extends ExpressionNode {
 		ExpressionNode lhs, rhs;
 
+		LessThanExpNode(Queue<Character> in) {
+
+		}
+
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(LessThanExpNode (LHS ");
@@ -1008,6 +1078,10 @@ public class ASTBuilder {
 
 	public static class BoolAndExpNode extends ExpressionNode {
 		ExpressionNode lhs, rhs;
+
+		BoolAndExpNode(Queue<Character> in) {
+
+		}
 
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
@@ -1060,8 +1134,12 @@ public class ASTBuilder {
 		}
 	}
 
-	public static class NewExpNode extends ASTNode {
+	public static class NewExpNode extends ExpressionNode {
 		String ident;
+
+		NewExpNode(Queue<Character> in) {
+
+		}
 
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
@@ -1072,8 +1150,12 @@ public class ASTBuilder {
 		}
 	}
 
-	public static class NewIntArrExpNode extends ASTNode {
+	public static class NewIntArrExpNode extends ExpressionNode {
 		int length;
+
+		NewIntArrExpNode(Queue<Character> in) {
+
+		}
 
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
@@ -1084,7 +1166,7 @@ public class ASTBuilder {
 		}
 	}
 
-	public abstract static class PrimeExpNode extends ASTNode {
+	public abstract static class PrimeExpNode extends ExpressionNode {
 
 	}
 
@@ -1117,8 +1199,12 @@ public class ASTBuilder {
 	public static class ReferenceAccessNode extends PrimeExpNode {
 		String ident;
 
+		ReferenceAccessNode(Queue<Character> in) {
+
+		}
+
 		ReferenceAccessNode(String s) {
-			this.ident = s;
+
 		}
 
 		String toStringTree() {
