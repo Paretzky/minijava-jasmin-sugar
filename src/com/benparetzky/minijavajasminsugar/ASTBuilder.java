@@ -921,6 +921,9 @@ public class ASTBuilder {
 			if ("-".equals(tok)) {
 				return new PlusMinusExpNode(in, -1);
 			}
+			if ("*".equals(tok)) {
+				return new MultiplyExpNode(in, 1);
+			}
 			if ("BOOLEAN_INVERT".equals(tok)) {
 				return new BangExpNode(in);
 			}
@@ -1027,6 +1030,18 @@ public class ASTBuilder {
 
 	public static class MultiplyExpNode extends ExpressionNode {
 		List<ExpressionNode> exps;
+
+		MultiplyExpNode(Queue<Character> in) {
+			ExpressionNode e;
+			exps = new LinkedList<ExpressionNode>();
+			while(!(e = ExpressionNode.constructExpression(in)).isNull) {
+				exps.add(e);
+			}
+			if(!validEnd(in)) {
+				parseError();
+				return;
+			}
+		}
 
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
