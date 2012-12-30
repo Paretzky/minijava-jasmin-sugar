@@ -899,6 +899,7 @@ public class ASTBuilder {
 
 	public abstract static class ExpressionNode extends ASTNode {
 		private static final ExpressionNode nullNode = null;
+		protected boolean isNull = false;
 		static ExpressionNode constructExpression(Queue<Character> in) {
 			String tok;
 			if (!validStart(in)) {
@@ -1042,6 +1043,11 @@ public class ASTBuilder {
 
 		PlusMinusExpNode(Queue<Character> in,int i) {
 			plus = i > 0;
+			ExpressionNode e;
+			exps = new LinkedList<ExpressionNode>();
+			while(!(e = ExpressionNode.constructExpression(in)).isNull) {
+				exps.add(e);
+			}
 		}
 
 		String toStringTree() {
