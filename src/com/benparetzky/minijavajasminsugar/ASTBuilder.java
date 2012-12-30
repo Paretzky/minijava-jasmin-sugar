@@ -909,10 +909,10 @@ public class ASTBuilder {
 			if (tok == null) {
 				return nullNode;
 			}
-			if ("LESS_THAN".equals(tok)) {
+			if ("<".equals(tok)) {
 				return new LessThanExpNode(in);
 			}
-			if ("BOOL_AND".equals(tok)) {
+			if ("&&".equals(tok)) {
 				return new BoolAndExpNode(in);
 			}
 			if ("+".equals(tok)) {
