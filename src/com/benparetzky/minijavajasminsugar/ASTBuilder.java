@@ -1009,7 +1009,11 @@ public class ASTBuilder {
 		ExpressionNode exp;
 
 		BangExpNode(Queue<Character> in) {
-
+			exp = ExpressionNode.constructExpression(in);
+			if(!validEnd(in)) {
+				parseError();
+				return;
+			}
 		}
 
 		String toStringTree() {
