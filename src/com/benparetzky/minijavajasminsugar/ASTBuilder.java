@@ -462,7 +462,16 @@ public class ASTBuilder {
 	public abstract static class StatementNode extends ASTNode {
 		//All instance's constructors will have an extra closing paren
 		boolean isNull;
-		private static final StatementNode nullNode = null;
+		private static final StatementNode nullNode = new StatementNode() {
+
+			@Override
+			String toStringTree() {
+				return "(NULL StatementNode)";
+			}
+		};
+		static {
+			nullNode.isNull = true;
+		}
 
 		/*
 		^(ASSIGNMENT_STATEMENT ^(LHS ID) ^(RHS expression))
