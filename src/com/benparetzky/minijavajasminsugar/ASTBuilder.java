@@ -1048,6 +1048,10 @@ public class ASTBuilder {
 			while(!(e = ExpressionNode.constructExpression(in)).isNull) {
 				exps.add(e);
 			}
+			if(!validEnd(in)) {
+				parseError();
+				return;
+			}
 		}
 
 		String toStringTree() {
