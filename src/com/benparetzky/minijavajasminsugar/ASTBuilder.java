@@ -922,7 +922,7 @@ public class ASTBuilder {
 				return new PlusMinusExpNode(in, -1);
 			}
 			if ("*".equals(tok)) {
-				return new MultiplyExpNode(in, 1);
+				return new MultiplyExpNode(in);
 			}
 			if ("BOOLEAN_INVERT".equals(tok)) {
 				return new BangExpNode(in);
