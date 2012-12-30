@@ -158,7 +158,7 @@ arrayexp
 	:	newexp (L_BRACKET rhs+=expression R_BRACKET)* ->  {$rhs != null}? ^(ARRAY_ACCESS ^(ARRAY newexp) ^(INDEX $rhs)*) -> newexp;
 	
 newexp	:	NEW ID L_PAREN R_PAREN -> ^(NEW ID)
-	|	NEW INT L_BRACKET expression R_BRACKET -> ^(NEW INTARRAY ^(LENGTH expression))
+	|	NEW INT L_BRACKET expression R_BRACKET -> ^(NEWINTARRAY ^(LENGTH expression))
 	|	primeexp;
 	
 primeexp:	ID -> ^(REFERENCE ID) | TRUE | FALSE | THIS | LitInt;
