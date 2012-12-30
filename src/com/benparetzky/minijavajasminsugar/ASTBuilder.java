@@ -965,7 +965,32 @@ public class ASTBuilder {
 		ExpressionNode lhs, rhs;
 
 		CallExpNode(Queue<Character> in) {
-
+			if (!"LHS".equals(getTok(in))) {
+				isNull = true;
+				return;
+			}
+			lhs = new ReferenceAccessNode(getTok(in));
+			if (!validEnd(in)) {
+				isNull = true;
+				return;
+			}
+			if (!validStart(in)) {
+				isNull = true;
+				return;
+			}
+			if (!"RHS".equals(getTok(in))) {
+				isNull = true;
+				return;
+			}
+			rhs = ExpressionNode.constructExpression(in);
+			if (!validEnd(in)) {
+				isNull = true;
+				return;
+			}
+			if (!validEnd(in)) {
+				isNull = true;
+				return;
+			}
 		}
 
 		String toStringTree() {
