@@ -89,7 +89,7 @@ public class ASTBuilder {
 		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
 			System.err.println(ste);
 		}
-		//throw new RuntimeException();
+		throw new ASTException();
 	}
 
 	public GoalNode build(Queue<Character> input) {
@@ -1401,7 +1401,7 @@ public class ASTBuilder {
 				isNull = true;
 				return;
 			}
-			ident = new ReferenceAccessNode(in,true);
+			ident = new ReferenceAccessNode(in);
 
 			if (!validEnd(in)) {
 				parseError();
@@ -1528,7 +1528,6 @@ public class ASTBuilder {
 
 		ReferenceAccessNode(Queue<Character> in) {
 			rawIdent = false;
-			/*
 			if(!validStart(in)) {
 				System.out.println(in.peek());
 				parseError();
@@ -1536,7 +1535,7 @@ public class ASTBuilder {
 			if (!"REFERENCE".equals(getTok(in))) {
 				parseError();
 			}
-			*/
+
 			ident = ExpressionNode.constructExpression(in);
 			if (ident.isNull) {
 				isNull = true;
@@ -1574,6 +1573,12 @@ public class ASTBuilder {
 
 		String toStringTree() {
 			return rawIdent ? identString : ident.toStringTree();
+		}
+	}
+
+	private static class ASTException extends RuntimeException {
+		ASTException() {
+			super();
 		}
 	}
 }
