@@ -47,10 +47,25 @@ public class ASTBuilder {
 		return false;
 	}
 
+	static boolean peekIsBool(Queue<Character> in) {
+		final char[] t = new char[]{'t', 'r', 'u', 'e'}, f = new char[]{'f', 'a', 'l', 's'};
+		char[] buf = new char[4];
+		int i = 0;
+		Arrays.fill(buf, (char) 0);
+		for (Character c : in) {
+			if (i < 4) {
+				buf[i++] = c.charValue();
+				continue;
+			}
+			break;
+		}
+		return Arrays.equals(buf, t) || Arrays.equals(buf, f);
+	}
+
 	static String getTok(Queue<Character> in) {
 		StringBuilder sb = new StringBuilder();
 		Character c;
-		while ((c = in.peek()) == ' ') {
+		while ((c = in.peek()) == ' ' || c == '\t') {
 			in.poll();
 		}
 		while ((c = in.peek()) != '(' && c != ' ' && c != ')') {
@@ -59,7 +74,14 @@ public class ASTBuilder {
 		while ((c = in.peek()) == ' ') {
 			in.poll();
 		}
-		System.out.println("\t" + sb.toString());
+		try {
+			//parseError();
+			System.out.println();
+			Thread.sleep(75);
+		} catch (InterruptedException e) {
+
+		}
+		System.out.println("getTok():	\t" + sb.toString());
 		return sb.toString();
 	}
 
@@ -67,7 +89,7 @@ public class ASTBuilder {
 		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
 			System.err.println(ste);
 		}
-		throw new RuntimeException();
+		//throw new RuntimeException();
 	}
 
 	public GoalNode build(Queue<Character> input) {
@@ -152,7 +174,6 @@ public class ASTBuilder {
 				parseError();
 			}
 			name = getTok(in);
-			System.out.println("name: " + name);
 			if (!validEnd(in)) {
 				parseError();
 			}
@@ -244,7 +265,8 @@ public class ASTBuilder {
 					while (!(vdn = new VarDeclNode(in)).isNull) {
 						varDecls.add(vdn);
 					}
-				} catch(RuntimeException ex) {}
+				} catch (RuntimeException ex) {
+				}
 				if (!validEnd(in)) {
 					parseError();
 					isNull = true;
@@ -312,14 +334,19 @@ public class ASTBuilder {
 		//^(VAR_DECL type ID)
 		VarDeclNode(Queue<Character> in) {
 			if (!validStart(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			if (!"VAR_DECL".equals(getTok(in))) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			type = getTok(in);
 			ident = getTok(in);
 			if (!validEnd(in)) {
+				isNull = true;
 				parseError();
 			}
 		}
@@ -351,57 +378,83 @@ public class ASTBuilder {
 		//	  ^(STATEMENTS statement*) ^(RETURN expression))
 		MethodDeclNode(Queue<Character> in) {
 			if (!validStart(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			if (!"METHOD".equals(getTok(in))) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			if (!validStart(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			if (!"NAME".equals(getTok(in))) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			name = getTok(in);
 			if (!validEnd(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			if (!validStart(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			if (!"RETURN_TYPE".equals(getTok(in))) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			returnType = getTok(in);
 			if (!validEnd(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			if (!validStart(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			String tok = getTok(in);
 			if ("METHOD_ARG_LIST".equals(tok)) {
 				VarDeclNode arg;
 				argList = new LinkedList<VarDeclNode>();
-				while(validStart(in)) {
+				while (validStart(in)) {
 					String type, ident;
 					type = getTok(in);
 					ident = getTok(in);
-					argList.add(new VarDeclNode(type,ident));
+					argList.add(new VarDeclNode(type, ident));
 					if (!validEnd(in)) {
+						isNull = true;
 						parseError();
+						return;
 					}
 				}
 				if (!validEnd(in)) {
+					isNull = true;
 					parseError();
+					return;
 				}
 				if (!validStart(in)) {
 					tok = getTok(in);
 					if (!"VARDECLS".equals(tok)) {
+						isNull = true;
 						parseError();
+						return;
 					}
 					if (!validStart(in)) {
+						isNull = true;
 						parseError();
+						return;
 					}
 				}
 				tok = getTok(in);
@@ -413,36 +466,48 @@ public class ASTBuilder {
 					varDecls.add(arg);
 				}
 				if (!validEnd(in)) {
+					isNull = true;
 					parseError();
+					return;
 				}
 				if (!validStart(in)) {
+					isNull = true;
 					parseError();
+					return;
 				}
 				tok = getTok(in);
 			}
 			if ("STATEMENTS".equals(tok)) {
 				StatementNode arg;
 				statements = new LinkedList<StatementNode>();
-				while ((arg = StatementNode.constructStatement(in)) != null && !arg.isNull) {
+				while ((arg = StatementNode.constructStatement(in)) != null && !(arg.isNull)) {
 					statements.add(arg);
-				}
+				}/*
 				if (!validEnd(in)) {
 					parseError();
-				}
+				}  */
 				if (!validStart(in)) {
+					isNull = true;
 					parseError();
+					return;
 				}
 				tok = getTok(in);
 			}
 			if (!"return".equals(tok)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			returnExp = ExpressionNode.constructExpression(in);
 			if (!validEnd(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 			if (!validEnd(in)) {
+				isNull = true;
 				parseError();
+				return;
 			}
 		}
 
@@ -555,32 +620,41 @@ public class ASTBuilder {
 			//Starting at LHS
 			if (!validStart(in)) {
 				isNull = true;
+				parseError();
 				return;
 			}
 			if (!"LHS".equals(getTok(in))) {
 				isNull = true;
+				parseError();
 				return;
 			}
-			lhs = new ReferenceAccessNode(getTok(in));
+			lhs = new ReferenceAccessNode(in);
+
 			if (!validEnd(in)) {
 				isNull = true;
+				System.out.println(in.peek());
+				parseError();
 				return;
 			}
 			if (!validStart(in)) {
 				isNull = true;
+				parseError();
 				return;
 			}
 			if (!"RHS".equals(getTok(in))) {
 				isNull = true;
+				parseError();
 				return;
 			}
 			rhs = ExpressionNode.constructExpression(in);
 			if (!validEnd(in)) {
 				isNull = true;
+				parseError();
 				return;
 			}
 			if (!validEnd(in)) {
 				isNull = true;
+				parseError();
 				return;
 			}
 		}
@@ -597,7 +671,7 @@ public class ASTBuilder {
 	}
 
 	public static class ArrayAssignmentStatementNode extends StatementNode {
-		ArrayAccessNode lhs;
+		ReferenceAccessNode arr;
 		ExpressionNode rhs;
 		int index;
 
@@ -613,7 +687,19 @@ public class ASTBuilder {
 				isNull = true;
 				return;
 			}
-			lhs = new ArrayAccessNode(in);
+			if (!validStart(in)) {
+				isNull = true;
+				return;
+			}
+			if (!"ARRAY".equals(getTok(in))) {
+				isNull = true;
+				return;
+			}
+			arr = new ReferenceAccessNode(in,true);
+			if (!validEnd(in)) {
+				isNull = true;
+				return;
+			}
 			if (!validEnd(in)) {
 				isNull = true;
 				return;
@@ -652,9 +738,9 @@ public class ASTBuilder {
 
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("(AssignmentStatementNode (LHS ");
-			sb.append(lhs.toStringTree());
-			sb.append(") (INDEX ");
+			sb.append("(AssignmentStatementNode (LHS (ARRAY ");
+			sb.append(arr.toStringTree());
+			sb.append(") ) (INDEX ");
 			sb.append(index);
 			sb.append(") (RHS ");
 			sb.append(rhs.toStringTree());
@@ -948,82 +1034,76 @@ public class ASTBuilder {
 
 		static ExpressionNode constructExpression(Queue<Character> in) {
 			String tok;
-			if (!validStart(in)) {
+			if (validStart(in)) {
 				tok = getTok(in);
 				if (tok == null) {
 					parseError();
 					return nullNode;
 				}
+				if ("<".equals(tok)) {
+					return new LessThanExpNode(in);
+				}
+				if ("&&".equals(tok)) {
+					return new BoolAndExpNode(in);
+				}
+				if ("+".equals(tok)) {
+					return new PlusMinusExpNode(in, 1);
+				}
+				if ("-".equals(tok)) {
+					return new PlusMinusExpNode(in, -1);
+				}
+				if ("*".equals(tok)) {
+					return new MultiplyExpNode(in);
+				}
+				if ("BOOLEAN_INVERT".equals(tok)) {
+					return new BangExpNode(in);
+				}
+				if ("CALLEXP".equals(tok)) {
+					return new CallExpNode(in);
+				}
+				if ("CALL".equals(tok)) {
+					return new PeriodExpNode(in);
+				}
+				if ("ARRAY_ACCESS".equals(tok)) {
+					return new ArrayAccessNode(in);
+				}
+				if ("new".equals(tok)) {
+					return new NewExpNode(in);
+				}
+				if ("NEWINTARRAY".equals(tok)) {
+					return new NewIntArrExpNode(in);
+				}
+				if ("REFERENCE".equals(tok)) {
+					return new ReferenceAccessNode(in);
+				}
+				if ("this".equalsIgnoreCase(tok)) {
+					return new ReferenceAccessNode(in);
+				}
+			}
+			if (peekIsBool(in)) {
 				try {
-					boolean b = Boolean.parseBoolean(tok);
+					boolean b = Boolean.parseBoolean(getTok(in));
 					return new LiteralBoolNode(b);
 				} catch (IllegalArgumentException e) {
 					//Fall through is ok here, if it's not a bool try some more stuffs
 				}
+			}
+			Character c = in.peek();
+			if (Character.isDigit(c)) {
 				try {
-					int i = Integer.parseInt(tok);
+					int i = Integer.parseInt(getTok(in));
 					return new LiteralIntNode(i);
 				} catch (IllegalArgumentException e) {
 					//Fall through is ok here, if it's not a bool try some more stuffs
 				}
-				parseError();
-				return nullNode;
 			}
-			tok = getTok(in);
-			if (tok == null) {
-				parseError();
-				return nullNode;
-			}
-			if ("<".equals(tok)) {
-				return new LessThanExpNode(in);
-			}
-			if ("&&".equals(tok)) {
-				return new BoolAndExpNode(in);
-			}
-			if ("+".equals(tok)) {
-				return new PlusMinusExpNode(in, 1);
-			}
-			if ("-".equals(tok)) {
-				return new PlusMinusExpNode(in, -1);
-			}
-			if ("*".equals(tok)) {
-				return new MultiplyExpNode(in);
-			}
-			if ("BOOLEAN_INVERT".equals(tok)) {
-				return new BangExpNode(in);
-			}
-			if ("CALLEXP".equals(tok)) {
-				return new CallExpNode(in);
-			}
-			if ("CALL".equals(tok)) {
-				return new PeriodExpNode(in);
-			}
-			if ("ARRAY_ACCESS".equals(tok)) {
-				return new ArrayAccessNode(in);
-			}
-			if ("new".equals(tok)) {
-				return new NewExpNode(in);
-			}
-			if ("NEWINTARRAY".equals(tok)) {
-				return new NewIntArrExpNode(in);
-			}
-			if ("REFERENCE".equals(tok)) {
-				return new ReferenceAccessNode(in);
-			}
-			if ("this".equalsIgnoreCase(tok)) {
-				return new ReferenceAccessNode("this");
-			}
+			System.out.println("peek:\t" + in.peek());
 			try {
-				boolean b = Boolean.parseBoolean(tok);
-				return new LiteralBoolNode(b);
-			} catch (IllegalArgumentException e) {
-				//Fall through is ok here, if it's not a bool try some more stuffs
-			}
-			try {
-				int i = Integer.parseInt(tok);
-				return new LiteralIntNode(i);
-			} catch (IllegalArgumentException e) {
-				//Fall through is ok here, if it's not a bool try some more stuffs
+				ReferenceAccessNode n = new ReferenceAccessNode(in, true);
+				if (!n.isNull) {
+					return n;
+				}
+			} catch (RuntimeException ex) {
 			}
 			parseError();
 			return nullNode;
@@ -1149,7 +1229,7 @@ public class ASTBuilder {
 
 		String toStringTree() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("(PeriodExpNode (NAME");
+			sb.append("(PeriodExpNode (NAME ");
 			sb.append(name);
 			sb.append(") ");
 			if (params != null && params.size() > 0) {
@@ -1227,10 +1307,11 @@ public class ASTBuilder {
 			plus = i > 0;
 			ExpressionNode e;
 			exps = new LinkedList<ExpressionNode>();
-			while (!(e = ExpressionNode.constructExpression(in)).isNull) {
+			while (!((e = ExpressionNode.constructExpression(in)).isNull)) {
 				exps.add(e);
 			}
 			if (!validEnd(in)) {
+				isNull = true;
 				parseError();
 				return;
 			}
@@ -1312,26 +1393,50 @@ public class ASTBuilder {
 			*/
 			if (!validStart(in)) {
 				parseError();
+				isNull = true;
+				return;
 			}
 			if (!"ARRAY".equals(getTok(in))) {
 				parseError();
+				isNull = true;
+				return;
 			}
-			ident = new ReferenceAccessNode(in);
+			ident = new ReferenceAccessNode(in,true);
+
 			if (!validEnd(in)) {
 				parseError();
+				isNull = true;
+				return;
 			}
 			indices = new LinkedList<ExpressionNode>();
-			while(validStart(in)) {
+			ExpressionNode e;
+			while (validStart(in)) {
 				if (!"INDEX".equals(getTok(in))) {
 					parseError();
+					isNull = true;
+					return;
 				}
-				indices.add(ExpressionNode.constructExpression(in));
+				e = ExpressionNode.constructExpression(in);
+				if (!e.isNull) {
+					indices.add(e);
+				} else {
+					if (!validEnd(in)) {
+						parseError();
+						isNull = true;
+						return;
+					}
+					break;
+				}
 				if (!validEnd(in)) {
 					parseError();
+					isNull = true;
+					return;
 				}
 			}
 			if (!validEnd(in)) {
 				parseError();
+				isNull = true;
+				return;
 			}
 		}
 
@@ -1417,27 +1522,58 @@ public class ASTBuilder {
 	}
 
 	public static class ReferenceAccessNode extends PrimeExpNode {
-		String ident;
+		ExpressionNode ident;
+		boolean rawIdent;
+		String identString;
 
 		ReferenceAccessNode(Queue<Character> in) {
+			rawIdent = false;
+			/*
 			if(!validStart(in)) {
+				System.out.println(in.peek());
 				parseError();
 			}
 			if (!"REFERENCE".equals(getTok(in))) {
 				parseError();
 			}
-			ident = getTok(in);
-			if(!validEnd(in)) {
+			*/
+			ident = ExpressionNode.constructExpression(in);
+			if (ident.isNull) {
+				isNull = true;
+				parseError();
+				return;
+			}
+			if (!validEnd(in)) {
+				isNull = true;
 				parseError();
 			}
 		}
 
-		ReferenceAccessNode(String s) {
-			this.ident = s;
+		ReferenceAccessNode(Queue<Character> in, boolean rawIdent) {
+			if (rawIdent) {
+				this.rawIdent = rawIdent;
+				identString = getTok(in);
+				if (identString.length() > 0) {
+					isNull = true;
+					parseError();
+					return;
+				}
+			} else {
+				ident = ExpressionNode.constructExpression(in);
+				if (ident.isNull) {
+					isNull = true;
+					parseError();
+					return;
+				}
+				if (!validEnd(in)) {
+					isNull = true;
+					parseError();
+				}
+			}
 		}
 
 		String toStringTree() {
-			return ident;
+			return rawIdent ? identString : ident.toStringTree();
 		}
 	}
 }
